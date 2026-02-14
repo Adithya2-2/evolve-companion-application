@@ -143,6 +143,10 @@ It covers:
 - Suggestion Algorithms (Groq + Fallbacks)
 - State Management & Data Patterns
 
+### 🐞 Autonomous Testing with TestSprite
+
+We support **TestSprite MCP** for automated AI testing. See the **[Setup Guide](docs/TESTSPRITE_SETUP.md)** to configure your environment.
+
 ---
 
 <div align="center">
