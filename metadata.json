@@ -1,0 +1,9 @@
+
+{
+  "name": "Evolve - Personal Growth Companion",
+  "description": "A personal growth and mindfulness dashboard to track your mood, journal your thoughts, and embark on new adventures for self-improvement.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}

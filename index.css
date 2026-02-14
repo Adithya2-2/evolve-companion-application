@@ -1,0 +1,110 @@
+/* Base styles are already inlined in index.html via Tailwind and custom CSS */
+
+/* Smooth global transitions when switching themes */
+html, body, * {
+    transition: background-color 0.4s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Override transition for things that should NOT animate (animations, transforms) */
+.animate-ken-burns,
+.animate-breathe,
+.animate-fade-in,
+.animate-fade-in-up,
+.animate-scale-in-up,
+.animate-title-reveal,
+[class*="animate-"] {
+    transition: none !important;
+}
+
+/* ── Light-mode glass layer overrides ── */
+/* In dark mode, white/10, white/5 etc work naturally for glassmorphism.
+   In light mode, we need these to become subtle dark-tinted glazes instead. */
+html.light .border-white\/10,
+html.light .border-white\/5 {
+    border-color: var(--color-border) !important;
+}
+html.light .border-white\/20,
+html.light .border-white\/30 {
+    border-color: var(--color-border-hover) !important;
+}
+
+html.light .bg-white\/5,
+html.light .bg-white\/10 {
+    background-color: var(--color-input-bg) !important;
+}
+
+html.light .bg-black\/60,
+html.light .bg-black\/40 {
+    background-color: var(--color-overlay) !important;
+}
+
+html.light .text-white {
+    color: var(--color-text-light) !important;
+}
+
+html.light .text-slate-300 {
+    color: var(--color-text-secondary) !important;
+}
+
+html.light .text-slate-400 {
+    color: var(--color-muted) !important;
+}
+
+html.light .text-slate-500 {
+    color: var(--color-muted) !important;
+}
+
+/* Light mode sidebar and card glass */
+html.light .bg-surface-dark\/50 {
+    background-color: rgba(226, 218, 208, 0.6) !important;
+}
+html.light .bg-surface-dark\/95 {
+    background-color: rgba(232, 224, 216, 0.97) !important;
+}
+
+/* Light mode background overlays for AnimatedBackground */
+html.light .bg-background-dark\/50 {
+    background-color: rgba(245, 240, 235, 0.45) !important;
+}
+html.light .bg-background-dark\/60 {
+    background-color: rgba(245, 240, 235, 0.55) !important;
+}
+html.light .bg-background-dark\/40 {
+    background-color: rgba(245, 240, 235, 0.35) !important;
+}
+
+/* Light mode gradient overrides for cards with from-*/
+html.light [class*="from-indigo-900"] {
+    --tw-gradient-from: rgba(232, 224, 216, 0.5) !important;
+}
+
+/* Light mode shadow adjustments */
+html.light .shadow-2xl {
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08) !important;
+}
+html.light .shadow-lg {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.06) !important;
+}
+html.light .shadow-inner {
+    box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Scrollbar styling */
+html.dark ::-webkit-scrollbar-track {
+    background: #1A1A2E;
+}
+html.dark ::-webkit-scrollbar-thumb {
+    background: #3D5A80;
+}
+html.light ::-webkit-scrollbar-track {
+    background: #EDE7E0;
+}
+html.light ::-webkit-scrollbar-thumb {
+    background: #C5BBB0;
+}
+::-webkit-scrollbar {
+    width: 6px;
+}
+::-webkit-scrollbar-thumb {
+    border-radius: 3px;
+}
