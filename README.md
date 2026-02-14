@@ -135,6 +135,16 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ---
 
+## 📚 Code Integration Wiki
+
+For a deep dive into the architecture, AI data flows, and component logic, please read our **[Code Wiki](docs/CODE_WIKI.md)**.
+It covers:
+- Emotion Analysis Engine (Face-API)
+- Suggestion Algorithms (Groq + Fallbacks)
+- State Management & Data Patterns
+
+---
+
 <div align="center">
 Built with ❤️ for Personal Growth
 </div>
