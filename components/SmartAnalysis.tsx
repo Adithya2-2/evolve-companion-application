@@ -4,20 +4,30 @@ import { fetchRecentMoodEntries, fetchRecentJournalEntries, fetchContentSuggesti
 import { computeMoodSummary, generateAiInsight, extractJournalKeywords, extractLibraryProfile } from '../utils/suggestionEngine';
 import type { MoodSummary, AiInsight } from '../types/interests';
 
-const ProgressBar: React.FC<{ value: number; color: string; label: string }> = ({ value, color, label }) => (
-    <div>
-        <div className="flex justify-between items-center mb-1.5">
-            <span className="text-xs text-slate-400">{label}</span>
-            <span className="text-xs font-bold text-slate-300">{Math.round(value)}%</span>
+const ProgressBar: React.FC<{ value: number; color: string; label: string }> = ({ value, color, label }) => {
+    const barRef = React.useRef<HTMLDivElement>(null);
+
+    React.useEffect(() => {
+        if (barRef.current) {
+            barRef.current.style.setProperty('--prog-width', `${value}%`);
+        }
+    }, [value]);
+
+    return (
+        <div className="mb-3">
+            <div className="flex justify-between mb-1">
+                <span className="text-xs text-slate-400">{label}</span>
+                <span className="text-xs font-bold text-slate-300">{Math.round(value)}%</span>
+            </div>
+            <div className="w-full bg-black/20 rounded-full h-2 overflow-hidden">
+                <div
+                    ref={barRef}
+                    className={`h-full rounded-full ${color} transition-all duration-1000 ease-out w-[length:var(--prog-width)]`}
+                />
+            </div>
         </div>
-        <div className="w-full bg-black/20 rounded-full h-2 overflow-hidden">
-            <div
-                className={`h-full rounded-full ${color} transition-all duration-1000 ease-out`}
-                style={{ width: `${value}%` }}
-            />
-        </div>
-    </div>
-);
+    )
+};
 
 const SmartAnalysis: React.FC = () => {
     const { user } = useAuth();
@@ -67,7 +77,7 @@ const SmartAnalysis: React.FC = () => {
         <div className="bg-surface-dark/60 backdrop-blur-sm border border-white/10 rounded-2xl shadow-lg p-6">
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-lg font-bold text-text-light flex items-center gap-2">
-                    <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>insights</span>
+                    <span className="material-symbols-outlined text-primary material-symbols-fill">insights</span>
                     Smart Insights
                 </h2>
                 <span className="text-xs text-slate-500">Last 7 days</span>
@@ -124,7 +134,7 @@ const SmartAnalysis: React.FC = () => {
 
 const StatBox: React.FC<{ icon: string; label: string; value: number; color: string }> = ({ icon, label, value, color }) => (
     <div className="bg-black/20 p-4 rounded-xl text-center">
-        <span className={`material-symbols-outlined text-lg ${color} mb-1 block`} style={{ fontVariationSettings: "'FILL' 1" }}>
+        <span className={`material-symbols-outlined text-lg ${color} mb-1 block material-symbols-fill`}>
             {icon}
         </span>
         <p className="text-xl font-bold text-text-light">{value}</p>

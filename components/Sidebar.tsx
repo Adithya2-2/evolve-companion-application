@@ -72,8 +72,8 @@ const NavLink: React.FC<NavLinkProps> = ({ name, icon, active, onClick }) => {
       href="#"
       onClick={(e) => { e.preventDefault(); onClick(); }}
       className={`group flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-300 transform hover:scale-105 ${active
-          ? 'bg-primary/20 text-text-light'
-          : 'hover:bg-white/10 text-slate-300 hover:text-text-light'
+        ? 'bg-primary/20 text-text-light'
+        : 'hover:bg-white/10 text-slate-300 hover:text-text-light'
         }`}
     >
       <AnimatedIcon name={icon} active={active} />
@@ -143,11 +143,11 @@ const Sidebar: React.FC<SidebarProps> = ({ activePage, setActivePage, user }) =>
         <div className="group flex items-center gap-3 px-4 py-3 rounded-xl bg-surface-dark border border-white/10 cursor-pointer hover:border-primary/50 transition-colors">
           {user ? (
             <>
-              <div
-                className="bg-center bg-no-repeat bg-cover rounded-full h-10 w-10 ring-2 ring-primary/30"
-                style={{ backgroundImage: `url("https://lh3.googleusercontent.com/aida-public/AB6AXuBybBfSOscd_IlJT3tFETk0yqdnJeh6t7E7l8kQ7fyT8pLeGUAE4g12gbvicp2eKcMSmYaO6KoYteDHx-JwClDu9YYYPWg7ORoMTpT9poK97ACozytUBgfWIKbFA82_cG_zIOCnZdPDcQVaMVVqQBtRcW41YRj67F4cMuLETq4jcNRadVuGI7XBUtylHIedmC0s2GdMp_-z6w1BxXz-bS2RtQQPWqKfXGD3bAF7UsomLbCWtS0R0mhyaxkvUSs4ppvDjo3-KQA6oQ")` }}
-                aria-label="Portrait of Alex Johnson"
-              ></div>
+              <img
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuBybBfSOscd_IlJT3tFETk0yqdnJeh6t7E7l8kQ7fyT8pLeGUAE4g12gbvicp2eKcMSmYaO6KoYteDHx-JwClDu9YYYPWg7ORoMTpT9poK97ACozytUBgfWIKbFA82_cG_zIOCnZdPDcQVaMVVqQBtRcW41YRj67F4cMuLETq4jcNRadVuGI7XBUtylHIedmC0s2GdMp_-z6w1BxXz-bS2RtQQPWqKfXGD3bAF7UsomLbCWtS0R0mhyaxkvUSs4ppvDjo3-KQA6oQ"
+                alt="Portrait of Alex Johnson"
+                className="rounded-full h-10 w-10 ring-2 ring-primary/30 object-cover"
+              />
               <div className="flex flex-col flex-1">
                 <p className="text-text-light text-sm font-bold truncate">{user.email}</p>
                 <p className="text-slate-400 text-xs">Growth Seeker</p>

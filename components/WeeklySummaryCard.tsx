@@ -67,7 +67,7 @@ const WeeklySummaryCard: React.FC<WeeklySummaryCardProps> = ({ summary, moodHist
         }
     };
 
-    const generateDeeperAnalysis = async () => {
+    const handleDeeperAnalysis = async () => {
         if (moodHistory.length === 0 && journalHistory.length === 0) return;
 
         setLoadingDeep(true);
@@ -145,7 +145,7 @@ const WeeklySummaryCard: React.FC<WeeklySummaryCardProps> = ({ summary, moodHist
                 </button>
 
                 <button
-                    onClick={generateDeeperAnalysis}
+                    onClick={handleDeeperAnalysis}
                     disabled={loadingDeep || (moodHistory.length === 0 && journalHistory.length === 0)}
                     className="w-full py-2.5 rounded-lg bg-primary/20 border border-primary/30 hover:bg-primary/30 text-primary hover:text-primary-light text-sm font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                 >

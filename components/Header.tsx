@@ -62,13 +62,12 @@ const Header: React.FC<HeaderProps> = ({ moodHistory }) => {
           Explorer's Log
         </p>
         <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-text-light tracking-tight leading-[1.1]">
-          <span className="inline-block animate-title-reveal" style={{ animationDelay: '0.1s' }}>
+          <span className="inline-block animate-title-reveal [animation-delay:0.1s]">
             {greeting}, {displayName}.
           </span>
           <br />
           <span
-            className="inline-block animate-title-reveal text-gradient-playful from-primary via-secondary to-accent-teal"
-            style={{ animationDelay: '0.4s' }}
+            className="inline-block animate-title-reveal text-gradient-playful from-primary via-secondary to-accent-teal [animation-delay:0.4s]"
           >
             You are evolving.
           </span>

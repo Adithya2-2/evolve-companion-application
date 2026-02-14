@@ -52,9 +52,17 @@ const DiscoveryProgressWidget: React.FC<DiscoveryProgressWidgetProps> = ({
     const displayPct = hasAnimated.current ? animatedPct : percentage;
     const offset = circumference - (displayPct / 100) * circumference;
     const color = getProgressColor(displayPct);
+    const widgetRef = React.useRef<HTMLDivElement>(null);
+
+    React.useEffect(() => {
+        if (widgetRef.current) {
+            widgetRef.current.style.setProperty('--widget-color', color);
+        }
+    }, [color]);
 
     return (
         <div
+            ref={widgetRef}
             className="relative flex items-center justify-center cursor-pointer group"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
@@ -79,23 +87,19 @@ const DiscoveryProgressWidget: React.FC<DiscoveryProgressWidgetProps> = ({
                     cy={size / 2}
                     r={radius}
                     fill="none"
-                    stroke={color}
+                    stroke="var(--widget-color)"
                     strokeWidth={strokeWidth}
                     strokeLinecap="round"
                     strokeDasharray={circumference}
                     strokeDashoffset={offset}
-                    style={{
-                        transition: 'stroke-dashoffset 1.2s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.8s ease',
-                        filter: `drop-shadow(0 0 6px ${color})`,
-                    }}
+                    className="progress-ring-transition drop-shadow-[0_0_6px_var(--widget-color)]"
                 />
             </svg>
 
             {/* Center text */}
             <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <span
-                    className="text-lg font-bold transition-colors duration-500"
-                    style={{ color }}
+                    className="text-lg font-bold transition-colors duration-500 text-[color:var(--widget-color)]"
                 >
                     {Math.round(displayPct)}%
                 </span>

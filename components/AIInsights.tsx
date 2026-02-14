@@ -1,17 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { MoodEntry } from '../types/moods';
 import { JournalEntry } from '../types/journal';
-import AnalysisService from '../services/AnalysisService';
+import { generateComprehensiveAnalysis, ComprehensiveAnalysisResult } from '../services/groq';
 
 interface AIInsightsProps {
   moodHistory: MoodEntry[];
   journalHistory: JournalEntry[];
 }
 
-interface AnalysisData {
-  weekly_summary: string;
-  mood_analysis: string;
-  insights: string[];
+interface AnalysisData extends ComprehensiveAnalysisResult {
   lastAnalyzed?: string;
 }
 
@@ -20,40 +17,51 @@ const AIInsights: React.FC<AIInsightsProps> = ({ moodHistory, journalHistory }) 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const analysisService = AnalysisService.getInstance();
-
-  // Initialize with cached data and check if new analysis is needed
+  // Initialize with cached data
   useEffect(() => {
-    // Load cached analysis first
-    const cached = analysisService.getCachedAnalysis();
+    const cached = localStorage.getItem('aiAnalysis_v2'); // New key for new format
     if (cached) {
-      setAnalysis(cached);
+      try {
+        setAnalysis(JSON.parse(cached));
+      } catch (e) {
+        console.error('Failed to parse cached analysis');
+      }
     }
-
-    // Trigger automatic analysis if needed
-    if (analysisService.shouldAnalyze(moodHistory, journalHistory)) {
-      analyzeData();
-    }
-
-    // Start periodic checks
-    analysisService.startPeriodicCheck(moodHistory, journalHistory);
-
-    return () => {
-      analysisService.stopPeriodicCheck();
-    };
-  }, [moodHistory.length, journalHistory.length]);
+  }, []);
 
   const analyzeData = async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const result = await analysisService.triggerAnalysis(moodHistory, journalHistory);
-      if (result) {
-        setAnalysis(result);
-      }
+      // Transform data for Groq
+      const moodData = moodHistory.slice(0, 20).map(entry => ({
+        mood: entry.mood.name,
+        score: entry.mood.score,
+        timestamp: entry.timestamp.toISOString(),
+        emotion_label: entry.emotion?.label || '',
+        emotion_confidence: entry.emotion?.confidence || 0
+      }));
+
+      const journalData = journalHistory.slice(0, 10).map(entry => ({
+        date: entry.date,
+        content: entry.content,
+        wordCount: entry.wordCount,
+        charCount: entry.charCount,
+        updatedAt: entry.updatedAt.toISOString()
+      }));
+
+      const result = await generateComprehensiveAnalysis(moodData, journalData);
+
+      const newAnalysis = {
+        ...result,
+        lastAnalyzed: new Date().toISOString()
+      };
+
+      setAnalysis(newAnalysis);
+      localStorage.setItem('aiAnalysis_v2', JSON.stringify(newAnalysis));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Analysis failed');
+      setError(err instanceof Error ? err.message : 'Analysis failed. Please check your API key.');
     } finally {
       setLoading(false);
     }
@@ -77,6 +85,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ moodHistory, journalHistory }) 
           <div className="h-3 bg-surface rounded mb-2"></div>
           <div className="h-3 bg-surface rounded w-3/4"></div>
         </div>
+        <p className="text-center text-text-secondary mt-4">Generating deep insights with Groq AI...</p>
       </div>
     );
   }
@@ -85,7 +94,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ moodHistory, journalHistory }) 
     return (
       <div className="bg-surface-light rounded-lg p-6 shadow-lg border-l-4 border-red-500">
         <p className="text-red-500">Error: {error}</p>
-        <button 
+        <button
           onClick={analyzeData}
           className="mt-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
         >
@@ -102,7 +111,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ moodHistory, journalHistory }) 
         <p className="text-text-secondary mb-4">
           Start tracking your moods and journal entries to receive personalized AI insights.
         </p>
-        <button 
+        <button
           onClick={analyzeData}
           disabled={moodHistory.length === 0 && journalHistory.length === 0}
           className="px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark transition-colors disabled:opacity-50"
@@ -156,7 +165,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ moodHistory, journalHistory }) 
 
       {/* Refresh Button */}
       <div className="text-center">
-        <button 
+        <button
           onClick={analyzeData}
           className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors shadow-md"
         >
@@ -166,5 +175,4 @@ const AIInsights: React.FC<AIInsightsProps> = ({ moodHistory, journalHistory }) 
     </div>
   );
 };
-
 export default AIInsights;

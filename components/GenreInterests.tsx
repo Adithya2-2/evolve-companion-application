@@ -118,7 +118,7 @@ const GenreInterests: React.FC = () => {
             <div className="p-5 pb-0">
                 <div className="flex items-center justify-between mb-4">
                     <h2 className="text-lg font-bold text-text-light flex items-center gap-2">
-                        <span className="material-symbols-outlined text-brand-green" style={{ fontVariationSettings: "'FILL' 1" }}>interests</span>
+                        <span className="material-symbols-outlined text-brand-green material-symbols-fill">interests</span>
                         My Interests
                     </h2>
                     <span className="text-[10px] text-slate-500 bg-white/5 px-2 py-1 rounded-full">
@@ -131,8 +131,8 @@ const GenreInterests: React.FC = () => {
                     <button
                         onClick={() => setActiveTab('interests')}
                         className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-xs font-medium transition-all ${activeTab === 'interests'
-                                ? 'bg-gradient-to-r from-brand-green/20 to-emerald-500/10 text-brand-green shadow-sm'
-                                : 'text-slate-400 hover:text-white'
+                            ? 'bg-gradient-to-r from-brand-green/20 to-emerald-500/10 text-brand-green shadow-sm'
+                            : 'text-slate-400 hover:text-white'
                             }`}
                     >
                         <span className="material-symbols-outlined text-sm">category</span>
@@ -141,8 +141,8 @@ const GenreInterests: React.FC = () => {
                     <button
                         onClick={() => setActiveTab('library')}
                         className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-xs font-medium transition-all ${activeTab === 'library'
-                                ? 'bg-gradient-to-r from-blue-500/20 to-indigo-500/10 text-blue-400 shadow-sm'
-                                : 'text-slate-400 hover:text-white'
+                            ? 'bg-gradient-to-r from-blue-500/20 to-indigo-500/10 text-blue-400 shadow-sm'
+                            : 'text-slate-400 hover:text-white'
                             }`}
                     >
                         <span className="material-symbols-outlined text-sm">local_library</span>
@@ -288,6 +288,7 @@ const GenreInterests: React.FC = () => {
                                                     value={item.status || 'want_to_read'}
                                                     onChange={e => updateItemStatus(item, e.target.value)}
                                                     className="text-[10px] bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-slate-300 focus:outline-none appearance-none cursor-pointer"
+                                                    aria-label="Filter status"
                                                 >
                                                     {Object.entries(STATUS_CONFIG).map(([val, conf]) => (
                                                         <option key={val} value={val}>{conf.label}</option>

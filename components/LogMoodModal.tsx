@@ -303,22 +303,23 @@ const LogMoodModal: React.FC<LogMoodModalProps> = ({ isOpen, onClose, addMoodEnt
                         <div key={em.emotion} className="group">
                           <div className="flex items-center justify-between mb-1.5">
                             <div className="flex items-center gap-2">
-                              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }}></div>
+                              <div className={`w-3 h-3 rounded-full bg-emotion-${em.emotion}`}></div>
                               <span className="text-text-light font-medium capitalize">{em.emotion}</span>
                               <span className="text-slate-500 text-xs">→ {moodName}</span>
                               {idx === 0 && (
                                 <span className="text-[10px] bg-primary/20 text-primary px-2 py-0.5 rounded-full font-semibold uppercase">Top</span>
                               )}
                             </div>
-                            <span className="font-bold text-sm" style={{ color }}>{pct}%</span>
+                            <span className={`font-bold text-sm text-emotion-${em.emotion}`}>{pct}%</span>
                           </div>
                           <div className="h-2 bg-white/5 rounded-full overflow-hidden">
                             <div
-                              className="h-full rounded-full transition-all duration-700"
-                              style={{
-                                width: `${pct}%`,
-                                backgroundColor: color,
-                                animationDelay: `${idx * 0.15}s`,
+                              className={`h-full rounded-full transition-all duration-700 w-[length:var(--emotion-percent)] bg-emotion-${em.emotion} [animation-delay:var(--anim-delay)]`}
+                              ref={(el) => {
+                                if (el) {
+                                  el.style.setProperty('--emotion-percent', `${pct}%`);
+                                  el.style.setProperty('--anim-delay', `${idx * 0.15}s`);
+                                }
                               }}
                             ></div>
                           </div>

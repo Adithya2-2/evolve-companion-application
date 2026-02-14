@@ -27,6 +27,7 @@ const themeFallbacks: Record<string, string> = {
 
 const AnimatedBackground: React.FC<AnimatedBackgroundProps> = ({ theme }) => {
   const { settings } = useSettings();
+  const containerRef = React.useRef<HTMLDivElement>(null);
 
   // Determine which image URL to use
   let imageUrl: string;
@@ -48,11 +49,17 @@ const AnimatedBackground: React.FC<AnimatedBackgroundProps> = ({ theme }) => {
     }
   }
 
+  React.useEffect(() => {
+    if (containerRef.current) {
+      containerRef.current.style.setProperty('--bg-image', `url(${imageUrl})`);
+    }
+  }, [imageUrl]);
+
   return (
     <div className="absolute inset-0 bg-background-dark z-0 overflow-hidden">
       <div
-        className="absolute inset-0 bg-cover bg-center animate-ken-burns transition-[background-image] duration-1000"
-        style={{ backgroundImage: `url(${imageUrl})` }}
+        ref={containerRef}
+        className="absolute inset-0 bg-cover bg-center animate-ken-burns transition-[background-image] duration-1000 bg-[image:var(--bg-image)]"
         aria-hidden="true"
       ></div>
       <div className={`absolute inset-0 ${overlayColor}`} aria-hidden="true"></div>

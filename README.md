@@ -17,8 +17,19 @@
 
 ## ✨ Key Features
 
+### ☁️ Pluto - Your Mindful Cloud Companion
+- **Adaptive Persona**: "Pluto" is a friendly, supportive AI cloud that floats on your screen.
+- **Dynamic Interactions**: Hover over Pluto to see him type real-time mindful messages like "Breathe in, breathe out..." or "Floating through thoughts...".
+- **Context-Aware**: Pluto remembers your recent journals and moods effectively (via vector-like context injection) to give personalized advice.
+- **Aesthetic Experience**: Enjoy a calming, liquid-glass UI with slow-moving "chameleon" backgrounds that shift colors to soothe your mind.
+
+### 🎨 Deep Personalization
+- **Themes**: Toggle between Light (Pastel Airy) and Dark (Deep Space) modes.
+- **Typography**: Choose your preferred font family and scale for maximum readability.
+- **Dynamic Backgrounds**: The app's background adapts to your theme preference, creating an immersive experience.
+
 ### 🤖 AI-Powered Intelligence (Groq Llama 3.3)
-- **Instant Chat Companion**: Have natural, supportive conversations with an AI that remembers your context.
+- **Instant Chat Companion**: Have natural, supportive conversations with Pluto.
 - **Deep Emotional Analysis**: Get psychological insights based on your mood history and journal entries.
 - **Weekly Summaries**: Receive a compassionate weekly overview of your emotional trends.
 - **Smart Suggestions**: Get curated books, movies, podcasts, and music tailored to your current emotional state.
@@ -143,9 +154,8 @@ It covers:
 - Suggestion Algorithms (Groq + Fallbacks)
 - State Management & Data Patterns
 
-### 🐞 Autonomous Testing with TestSprite
-
-We support **TestSprite MCP** for automated AI testing. See the **[Setup Guide](docs/TESTSPRITE_SETUP.md)** to configure your environment.
+### 📚 Code Wiki
+- [Technical Architecture & Systems Documentation](docs/CODE_WIKI.md)
 
 ---
 

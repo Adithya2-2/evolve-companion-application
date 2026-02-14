@@ -151,7 +151,8 @@ const MoodTrendChart: React.FC<MoodTrendChartProps> = ({ moodHistory }) => {
                             strokeLinejoin="round"
                             filter="url(#glow)"
                             className="animate-draw-path"
-                            style={{ strokeDasharray: pathLength, strokeDashoffset: pathLength }}
+                            strokeDasharray={pathLength}
+                            strokeDashoffset={pathLength}
                         />
                     )}
 
@@ -235,7 +236,7 @@ const MoodTrendChart: React.FC<MoodTrendChartProps> = ({ moodHistory }) => {
                         .filter(([emotion]) => dataPoints.some(p => p.emotion === emotion))
                         .map(([emotion, color]) => (
                             <div key={emotion} className="flex items-center gap-1.5">
-                                <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
+                                <span className={`w-2.5 h-2.5 rounded-full bg-emotion-${emotion}`} />
                                 <span className="text-xs text-slate-400 capitalize">{emotion}</span>
                             </div>
                         ))}

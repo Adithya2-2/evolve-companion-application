@@ -258,11 +258,40 @@ Be conversational, warm, and specific. Use the user's name if they share it. Kee
 
 If a user seems to be in crisis, gently suggest professional resources while still being supportive.`;
 
+export interface UserChatContext {
+    journal?: {
+        recentKeywords: string[];
+        recentEmotions: string[];
+    };
+    interests?: string[];
+    currentMood?: string;
+}
+
 export async function chatWithGroq(
-    conversationHistory: ChatMessageInput[]
+    conversationHistory: ChatMessageInput[],
+    context?: UserChatContext
 ): Promise<string | null> {
+    let systemPrompt = CHAT_SYSTEM_PROMPT;
+
+    if (context) {
+        const moodPart = context.currentMood ? `\nCurrent Mood: ${context.currentMood}` : '';
+        const journalPart = context.journal?.recentKeywords?.length
+            ? `\nRecent Journal Themes: ${context.journal.recentKeywords.join(', ')}`
+            : '';
+        const emotionPart = context.journal?.recentEmotions?.length
+            ? `\nRecent Emotions: ${context.journal.recentEmotions.join(', ')}`
+            : '';
+        const interestPart = context.interests?.length
+            ? `\nUser Interests: ${context.interests.join(', ')}`
+            : '';
+
+        if (moodPart || journalPart || emotionPart || interestPart) {
+            systemPrompt += `\n\nUSER CONTEXT (Use this to personalize your response, but do not explicitly mention "I see in your data" unless relevant):${moodPart}${emotionPart}${journalPart}${interestPart}`;
+        }
+    }
+
     const messages: ChatMessage[] = [
-        { role: 'system', content: CHAT_SYSTEM_PROMPT },
+        { role: 'system', content: systemPrompt },
         ...conversationHistory.map(m => ({
             role: m.role as 'user' | 'assistant',
             content: m.content,
@@ -366,4 +395,68 @@ Provide a deeper emotional analysis.`;
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },
     ], 800, 0.7);
+}
+
+export interface ComprehensiveAnalysisResult {
+    weekly_summary: string;
+    mood_analysis: string;
+    insights: string[];
+}
+
+export async function generateComprehensiveAnalysis(
+    moodData: WeeklyMoodData[],
+    journalData: WeeklyJournalData[]
+): Promise<ComprehensiveAnalysisResult> {
+    if (moodData.length === 0 && journalData.length === 0) {
+        throw new Error('Not enough data for analysis');
+    }
+
+    const moodSummary = moodData.map(m =>
+        `${m.timestamp.slice(0, 10)}: ${m.mood} (score: ${m.score}, emotion: ${m.emotion_label || 'manual'})`
+    ).join('\n');
+
+    const journalSummary = journalData.map(j =>
+        `[${j.date}]: "${j.content.slice(0, 150)}..."`
+    ).join('\n');
+
+    const systemPrompt = `You are Evolve, an AI wellness analyst. Analyze the user's data and provide a structured report.
+Output VALID JSON only. No markdown.
+
+JSON Structure:
+{
+  "weekly_summary": "Brief 2-3 sentence overview of the week's emotional journey.",
+  "mood_analysis": "Deeper 4-5 sentence analysis of patterns, triggers, and growth areas.",
+  "insights": [
+    "Key insight 1 (bullet point)",
+    "Key insight 2 (bullet point)",
+    "Key insight 3 (bullet point)"
+  ]
+}`;
+
+    const userPrompt = `Mood log (recent):
+${moodSummary || 'No mood entries'}
+
+Journal entries (recent):
+${journalSummary || 'No journal entries'}
+
+Provide comprehensive analysis in JSON.`;
+
+    try {
+        const raw = await getGroqChatCompletion([
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt },
+        ], 1200, 0.7);
+
+        const cleaned = extractJson(raw);
+        const parsed = JSON.parse(cleaned);
+
+        return {
+            weekly_summary: parsed.weekly_summary || 'Analysis unavailable.',
+            mood_analysis: parsed.mood_analysis || 'Could not generate analysis.',
+            insights: Array.isArray(parsed.insights) ? parsed.insights : ['Keep tracking to see insights.'],
+        };
+    } catch (e) {
+        console.error('[Groq] Comprehensive Analysis Failed:', e);
+        throw e;
+    }
 }

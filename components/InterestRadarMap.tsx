@@ -117,7 +117,7 @@ const InterestRadarMap: React.FC = () => {
         <div className="bg-surface-dark/60 backdrop-blur-sm border border-white/10 rounded-2xl shadow-lg p-6">
             <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-bold text-text-light flex items-center gap-2">
-                    <span className="material-symbols-outlined text-accent-teal" style={{ fontVariationSettings: "'FILL' 1" }}>radar</span>
+                    <span className="material-symbols-outlined text-accent-teal material-symbols-fill">radar</span>
                     Genre Radar
                 </h2>
                 <span className="text-[10px] text-slate-500 bg-white/5 px-2 py-1 rounded-full">
@@ -166,7 +166,7 @@ const InterestRadarMap: React.FC = () => {
                             x1={cx} y1={cy} x2={p.x} y2={p.y}
                             stroke={hoveredIndex === i ? 'rgba(99, 102, 241, 0.5)' : 'rgba(255,255,255,0.08)'}
                             strokeWidth={hoveredIndex === i ? 2 : 1}
-                            style={{ transition: 'stroke 0.3s, stroke-width 0.3s' }}
+                            className="transition-[stroke,stroke-width] duration-300"
                         />
                     ))}
 
@@ -178,7 +178,7 @@ const InterestRadarMap: React.FC = () => {
                         strokeWidth="2"
                         strokeLinejoin="round"
                         filter="url(#radar-glow)"
-                        style={{ transition: 'd 1s cubic-bezier(0.4,0,0.2,1)' }}
+                        className="transition-[d] duration-1000 ease-[cubic-bezier(0.4,0,0.2,1)]"
                     />
 
                     {/* Data points */}
@@ -189,7 +189,7 @@ const InterestRadarMap: React.FC = () => {
                                 fill="transparent"
                                 onMouseEnter={() => setHoveredIndex(i)}
                                 onMouseLeave={() => setHoveredIndex(null)}
-                                style={{ cursor: 'pointer' }}
+                                className="cursor-pointer"
                             />
                             <circle
                                 cx={p.x} cy={p.y}
@@ -197,7 +197,7 @@ const InterestRadarMap: React.FC = () => {
                                 fill={hoveredIndex === i ? '#818cf8' : '#6366f1'}
                                 stroke={hoveredIndex === i ? '#c7d2fe' : 'rgba(255,255,255,0.3)'}
                                 strokeWidth={hoveredIndex === i ? 2 : 1}
-                                style={{ transition: 'all 0.3s' }}
+                                className="transition-all duration-300"
                             />
                         </g>
                     ))}
@@ -209,9 +209,8 @@ const InterestRadarMap: React.FC = () => {
                             x={p.x} y={p.y}
                             textAnchor="middle"
                             dominantBaseline="middle"
-                            className={`transition-all duration-300 ${hoveredIndex === i ? 'fill-indigo-300 font-semibold' : 'fill-slate-500'
+                            className={`transition-all duration-300 ${hoveredIndex === i ? 'fill-indigo-300 font-semibold text-[10px]' : 'fill-slate-500 text-[9px]'
                                 }`}
-                            style={{ fontSize: hoveredIndex === i ? '10px' : '9px' }}
                         >
                             {axes[i].name.length > 12 ? axes[i].name.slice(0, 11) + '…' : axes[i].name}
                         </text>

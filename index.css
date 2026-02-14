@@ -1,8 +1,14 @@
 /* Base styles are already inlined in index.html via Tailwind and custom CSS */
 
 /* Smooth global transitions when switching themes */
-html, body, * {
+html,
+body,
+* {
     transition: background-color 0.4s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+body {
+    font-family: var(--font-family, 'Inter', sans-serif);
 }
 
 /* Override transition for things that should NOT animate (animations, transforms) */
@@ -23,6 +29,7 @@ html.light .border-white\/10,
 html.light .border-white\/5 {
     border-color: var(--color-border) !important;
 }
+
 html.light .border-white\/20,
 html.light .border-white\/30 {
     border-color: var(--color-border-hover) !important;
@@ -58,6 +65,7 @@ html.light .text-slate-500 {
 html.light .bg-surface-dark\/50 {
     background-color: rgba(226, 218, 208, 0.6) !important;
 }
+
 html.light .bg-surface-dark\/95 {
     background-color: rgba(232, 224, 216, 0.97) !important;
 }
@@ -66,9 +74,11 @@ html.light .bg-surface-dark\/95 {
 html.light .bg-background-dark\/50 {
     background-color: rgba(245, 240, 235, 0.45) !important;
 }
+
 html.light .bg-background-dark\/60 {
     background-color: rgba(245, 240, 235, 0.55) !important;
 }
+
 html.light .bg-background-dark\/40 {
     background-color: rgba(245, 240, 235, 0.35) !important;
 }
@@ -82,9 +92,11 @@ html.light [class*="from-indigo-900"] {
 html.light .shadow-2xl {
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08) !important;
 }
+
 html.light .shadow-lg {
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.06) !important;
 }
+
 html.light .shadow-inner {
     box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.04) !important;
 }
@@ -93,18 +105,206 @@ html.light .shadow-inner {
 html.dark ::-webkit-scrollbar-track {
     background: #1A1A2E;
 }
+
 html.dark ::-webkit-scrollbar-thumb {
     background: #3D5A80;
 }
+
 html.light ::-webkit-scrollbar-track {
     background: #EDE7E0;
 }
+
 html.light ::-webkit-scrollbar-thumb {
     background: #C5BBB0;
 }
+
 ::-webkit-scrollbar {
     width: 6px;
 }
+
 ::-webkit-scrollbar-thumb {
     border-radius: 3px;
+}
+
+/* Utilities to avoid inline styles */
+.material-symbols-fill {
+    font-variation-settings: 'FILL' 1;
+}
+
+.font-family-inter {
+    font-family: 'Inter', sans-serif;
+}
+
+.font-family-playfair {
+    font-family: 'Playfair Display', serif;
+}
+
+.font-family-jetbrains {
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* Emotion Color Utilities */
+.text-emotion-happy {
+    color: #22c55e;
+}
+
+.bg-emotion-happy {
+    background-color: #22c55e;
+}
+
+.text-emotion-sad {
+    color: #60a5fa;
+}
+
+.bg-emotion-sad {
+    background-color: #60a5fa;
+}
+
+.text-emotion-angry {
+    color: #fb7185;
+}
+
+.bg-emotion-angry {
+    background-color: #fb7185;
+}
+
+.text-emotion-fearful {
+    color: #f59e0b;
+}
+
+.bg-emotion-fearful {
+    background-color: #f59e0b;
+}
+
+.text-emotion-surprised {
+    color: #a78bfa;
+}
+
+.bg-emotion-surprised {
+    background-color: #a78bfa;
+}
+
+.text-emotion-disgusted {
+    color: #f97316;
+}
+
+.bg-emotion-disgusted {
+    background-color: #f97316;
+}
+
+.text-emotion-neutral {
+    color: #94a3b8;
+}
+
+.bg-emotion-neutral {
+    background-color: #94a3b8;
+}
+
+/* Progress Ring Transition */
+.progress-ring-transition {
+    transition: stroke-dashoffset 1.2s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.8s ease;
+}
+
+/* Chameleon Dynamic Background - Positive & Calming */
+@keyframes chameleon-flow {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.animate-chameleon {
+    /* Light Mode: Pastel, airy colors */
+    background: linear-gradient(300deg, #e0f2fe, #ede9fe, #d1fae5, #ffedd5);
+    background-size: 300% 300%;
+    animation: chameleon-flow 25s ease infinite;
+}
+
+html.dark .animate-chameleon {
+    /* Dark Mode: Deeper, soothing space colors (Midnight -> Deep Indigo -> Dark Teal) */
+    background: linear-gradient(300deg, #0f172a, #312e81, #134e4a, #111827);
+    background-size: 300% 300%;
+}
+
+/* liquid-glass bubbling effect */
+.bubble-user {
+    border-radius: 20px 20px 4px 20px;
+    background: rgba(255, 255, 255, 0.65);
+    /* Light mode: Semi-transparent white */
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    color: #1e293b;
+    /* Dark text */
+}
+
+html.dark .bubble-user {
+    background: rgba(45, 212, 191, 0.2);
+    /* Dark mode: Teal tint */
+    border: 1px solid rgba(45, 212, 191, 0.3);
+    color: #f1f5f9;
+    /* Light text */
+}
+
+.bubble-bot {
+    border-radius: 20px 20px 20px 4px;
+    background: rgba(255, 255, 255, 0.85);
+    /* Light mode: Opaque white glass */
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    color: #0f172a;
+    /* Dark text */
+}
+
+html.dark .bubble-bot {
+    background: rgba(30, 41, 59, 0.7);
+    /* Dark mode: Dark glass */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #e2e8f0;
+    /* Light text */
+}
+
+/* Cloud Tooltip */
+.cloud-tooltip {
+    background: rgba(255, 255, 255, 0.95);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    border-radius: 20px 20px 20px 4px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    /* Cloud shape bumps */
+    position: relative;
+}
+
+html.dark .cloud-tooltip {
+    background: rgba(30, 41, 59, 0.95);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #f1f5f9;
+}
+
+/* Floating Icon Animation */
+@keyframes float-icon {
+
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-3px);
+    }
+}
+
+.animate-float-icon {
+    animation: float-icon 3s ease-in-out infinite;
 }

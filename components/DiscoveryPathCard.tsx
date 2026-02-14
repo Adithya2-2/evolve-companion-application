@@ -81,8 +81,29 @@ const DiscoveryPathCard: React.FC<DiscoveryPathCardProps> = ({ moodHistory }) =>
         [user, todayKey]
     );
 
+    const containerRef = useRef<HTMLDivElement>(null);
+    const progressRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (containerRef.current) {
+            containerRef.current.style.setProperty('--progress-color', progressColor);
+        }
+    }, [progressColor]);
+
+    useEffect(() => {
+        if (progressRef.current) {
+            // Updated to also setting progress color here in case it's used locally
+            progressRef.current.style.setProperty('--progress-width', `${percentage}%`);
+            // Ensure this inherits or sets the color if needed, though parent sets it. 
+            // Actually parent sets --progress-color, but this div uses it.
+        }
+    }, [percentage]);
+
     return (
-        <div className="bg-gradient-to-br from-indigo-900/40 to-surface-dark border border-white/10 p-6 rounded-2xl flex flex-col gap-5 shadow-lg h-full">
+        <div
+            ref={containerRef}
+            className="bg-gradient-to-br from-indigo-900/40 to-surface-dark border border-white/10 p-6 rounded-2xl flex flex-col gap-5 shadow-lg h-full"
+        >
             {/* Header with inline progress ring */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -119,21 +140,17 @@ const DiscoveryPathCard: React.FC<DiscoveryPathCardProps> = ({ moodHistory }) =>
                                 cy={ringSize / 2}
                                 r={radius}
                                 fill="none"
-                                stroke={progressColor}
+                                stroke="var(--progress-color)"
                                 strokeWidth={strokeWidth}
                                 strokeLinecap="round"
                                 strokeDasharray={circumference}
                                 strokeDashoffset={offset}
-                                style={{
-                                    transition: 'stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.6s ease',
-                                    filter: `drop-shadow(0 0 4px ${progressColor})`,
-                                }}
+                                className="transition-[stroke-dashoffset] duration-600 ease-[cubic-bezier(0.4,0,0.2,1)] drop-shadow-[0_0_4px_var(--progress-color)]"
                             />
                         </svg>
                         <div className="absolute inset-0 flex flex-col items-center justify-center">
                             <span
-                                className="text-sm font-bold transition-colors duration-500"
-                                style={{ color: progressColor }}
+                                className="text-sm font-bold transition-colors duration-500 text-[color:var(--progress-color)]"
                             >
                                 {percentage}%
                             </span>
@@ -146,23 +163,18 @@ const DiscoveryPathCard: React.FC<DiscoveryPathCardProps> = ({ moodHistory }) =>
             <div className="w-full">
                 <div className="flex justify-between text-xs text-slate-400 mb-1.5">
                     <span>{completedCount} of {totalCount} tasks complete</span>
-                    <span style={{ color: progressColor }}>{percentage}%</span>
+                    <span className="text-[color:var(--progress-color)]">{percentage}%</span>
                 </div>
                 <div className="w-full bg-black/20 rounded-full h-2 overflow-hidden">
                     <div
-                        className="h-full rounded-full transition-all duration-600 ease-out"
-                        style={{
-                            width: `${percentage}%`,
-                            backgroundColor: progressColor,
-                            boxShadow: `0 0 8px ${progressColor}`,
-                            transition: 'width 0.6s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.6s ease',
-                        }}
+                        ref={progressRef}
+                        className="h-full rounded-full w-[length:var(--progress-width)] bg-[color:var(--progress-color)] shadow-[0_0_8px_var(--progress-color)] transition-[width,background-color] duration-600 ease-[cubic-bezier(0.4,0,0.2,1)]"
                     />
                 </div>
             </div>
 
             {/* Task List */}
-            <div className="flex-1 overflow-y-auto" style={{ maxHeight: '320px' }}>
+            <div className="flex-1 overflow-y-auto max-h-[320px]">
                 {loading ? (
                     <div className="space-y-3">
                         {[...Array(4)].map((_, i) => (

@@ -540,3 +540,62 @@ export const fetchRecentJournalEntries = async (
     updatedAt: new Date(entry.updated_at),
   }));
 };
+// ──────────────────────────────────────────────
+// Chat History (Memory)
+// ──────────────────────────────────────────────
+export interface ChatMessageEntry {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  created_at: string;
+}
+
+export const fetchChatHistory = async (userId: string, limit = 50): Promise<ChatMessageEntry[]> => {
+  const { data, error } = await supabase
+    .from('chat_messages')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error('Error fetching chat history:', error);
+    return [];
+  }
+
+  // Return in chronological order for chat UI
+  return (data || []).reverse().map(msg => ({
+    id: msg.id,
+    role: msg.role as 'user' | 'assistant',
+    content: msg.content,
+    created_at: msg.created_at,
+  }));
+};
+
+export const saveChatMessage = async (
+  userId: string,
+  role: 'user' | 'assistant',
+  content: string
+): Promise<ChatMessageEntry | null> => {
+  const { data, error } = await supabase
+    .from('chat_messages')
+    .insert({
+      user_id: userId,
+      role,
+      content,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error saving chat message:', error);
+    return null;
+  }
+
+  return {
+    id: data.id,
+    role: data.role,
+    content: data.content,
+    created_at: data.created_at,
+  };
+};

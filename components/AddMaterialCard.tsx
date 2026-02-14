@@ -25,7 +25,7 @@ const AddMaterialCard: React.FC = () => {
         <div className="bg-surface-dark/60 backdrop-blur-sm border border-white/10 rounded-2xl shadow-lg p-6">
             <div className="flex justify-between items-center mb-4">
                 <h2 className="text-lg font-bold text-text-light flex items-center gap-2">
-                    <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>
+                    <span className="material-symbols-outlined text-primary material-symbols-fill">
                         bookmark
                     </span>
                     My Saved Collection
@@ -75,7 +75,7 @@ const AddMaterialCard: React.FC = () => {
                                 )}
                             </div>
                             <div className="absolute top-2 right-2 bg-black/50 backdrop-blur-sm rounded-full px-1.5 py-0.5">
-                                <span className="material-symbols-outlined text-[10px] text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>
+                                <span className="material-symbols-outlined text-[10px] text-primary material-symbols-fill">
                                     {TYPE_ICONS[item.type]}
                                 </span>
                             </div>

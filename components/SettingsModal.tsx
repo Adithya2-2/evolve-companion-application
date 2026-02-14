@@ -84,22 +84,22 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
                     <button
                         onClick={() => updateSettings({ themeMode: 'dark' })}
                         className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all duration-300 ${settings.themeMode === 'dark'
-                                ? 'border-primary bg-primary/10 shadow-lg shadow-primary/10'
-                                : 'border-white/10 hover:border-white/20 hover:bg-white/5'
+                            ? 'border-primary bg-primary/10 shadow-lg shadow-primary/10'
+                            : 'border-white/10 hover:border-white/20 hover:bg-white/5'
                             }`}
                     >
-                        <span className="material-symbols-outlined text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>dark_mode</span>
+                        <span className="material-symbols-outlined text-2xl material-symbols-fill">dark_mode</span>
                         <span className="text-sm font-semibold text-text-light">Deep Night</span>
                         <span className="text-[10px] text-slate-400">Calming indigo & slate tones</span>
                     </button>
                     <button
                         onClick={() => updateSettings({ themeMode: 'light' })}
                         className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all duration-300 ${settings.themeMode === 'light'
-                                ? 'border-primary bg-primary/10 shadow-lg shadow-primary/10'
-                                : 'border-white/10 hover:border-white/20 hover:bg-white/5'
+                            ? 'border-primary bg-primary/10 shadow-lg shadow-primary/10'
+                            : 'border-white/10 hover:border-white/20 hover:bg-white/5'
                             }`}
                     >
-                        <span className="material-symbols-outlined text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>light_mode</span>
+                        <span className="material-symbols-outlined text-2xl material-symbols-fill">light_mode</span>
                         <span className="text-sm font-semibold text-text-light">Warm Day</span>
                         <span className="text-[10px] text-slate-400">Cream, sage & stone palette</span>
                     </button>
@@ -157,6 +157,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
                     accept="image/*"
                     className="hidden"
                     onChange={handleImageUpload}
+                    aria-label="Upload custom background image"
                 />
 
                 {/* AI Prompt */}
@@ -199,7 +200,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
                                 }`}
                         >
                             <span className="text-sm font-medium">{opt.label}</span>
-                            <span className="text-xs text-slate-500" style={{ fontFamily: opt.value }}>
+                            <span className={`text-xs text-slate-500 ${opt.value === 'Playfair Display' ? 'font-family-playfair' : opt.value === 'JetBrains Mono' ? 'font-family-jetbrains' : 'font-family-inter'}`}>
                                 {opt.preview}
                             </span>
                         </button>
