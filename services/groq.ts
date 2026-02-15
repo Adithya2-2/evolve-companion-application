@@ -24,7 +24,22 @@ function extractJson(raw: string): string {
         return raw.trim();
     }
 
+    // Ensure we aren't picking up a nested object inside explanatory text if possible
+    // But simplest is strictly taking the outer bounds
     return raw.substring(start, end + 1);
+}
+
+function normalizeType(t: string): 'book' | 'movie' | 'podcast' | 'music' | null {
+    const lower = t.toLowerCase().trim();
+    if (['book', 'movie', 'podcast', 'music'].includes(lower)) {
+        return lower as any;
+    }
+    // Map common mis-generations
+    if (lower === 'film') return 'movie';
+    if (lower === 'song' || lower === 'track' || lower === 'album') return 'music';
+    if (lower === 'audiobook') return 'book';
+    if (lower === 'show' || lower === 'series') return 'movie'; // Close enough
+    return null;
 }
 
 /* ───────────── Low-level chat completion ───────────── */
@@ -115,7 +130,7 @@ export async function generateAiSuggestions(
         ? `Recent journal themes: ${profile.journalKeywords.join(', ')}.`
         : '';
 
-    const systemPrompt = `You are Evolve, a personal growth AI.
+    const systemPrompt = `You are Pluto, a personal growth AI.
 Your goal: Suggest 4 items (1 Book, 1 Movie, 1 Podcast, 1 Music) for the user's well-being.
 
 RULES:
@@ -138,7 +153,16 @@ JSON STRUCTURE:
     }
   ]
 }
-IMPORTANT: Do not include any introductory text, markdown formatting, or explanations. Return ONLY the raw JSON string.`;
+      "reason": "Why it fits their mood.",
+      "benefit": "Mental health benefit.",
+      "genres": ["Genre1"]
+    }
+  ]
+}
+IMPORTANT: 
+- valid types are ONLY: "book", "movie", "podcast", "music".
+- Return ONLY the raw JSON string.
+- Do NOT include markdown code blocks (like \`\`\`json).`;
 
     const userPrompt = `Profile:
 - Mood: ${profile.mood} (${profile.moodTrend})
@@ -165,16 +189,22 @@ Suggest 4 items now. JSON only.`;
         const suggestions: any[] = parsed.suggestions || [];
 
         return suggestions
-            .filter(s => s.title && s.type)
-            .map(s => ({
-                title: s.title,
-                type: (s.type || 'book').toLowerCase() as GroqSuggestion['type'],
-                author: s.author || 'Unknown',
-                description: s.description || s.description_short || 'No description available',
-                reason: s.reason || 'Recommended for you',
-                benefit: s.benefit || 'Positive growth',
-                genres: Array.isArray(s.genres) ? s.genres : [],
-            }));
+            .map(s => {
+                const type = normalizeType(s.type || '');
+                if (!type || !s.title) return null;
+
+                return {
+                    title: s.title,
+                    type: type,
+                    author: s.author || 'Unknown',
+                    description: s.description || s.description_short || 'No description available',
+                    reason: s.reason || 'Recommended for you',
+                    benefit: s.benefit || 'Positive growth',
+                    genres: Array.isArray(s.genres) ? s.genres : [],
+                };
+            })
+            .filter((s): s is GroqSuggestion => s !== null);
+
     } catch (e) {
         console.error('[Groq] Suggestion Error:', e);
         // We return null here so the UI falls back to heuristic engine
@@ -193,7 +223,7 @@ export interface GroqInsightResult {
 export async function generateAiInsightText(
     profile: GroqUserProfile
 ): Promise<GroqInsightResult | null> {
-    const systemPrompt = `You are Evolve. Analyze the user's emotional state and provide a warm insight.
+    const systemPrompt = `You are Pluto. Analyze the user's emotional state and provide a warm insight.
 Output VALID JSON only. No markdown.
 
 JSON Structure:
@@ -247,7 +277,7 @@ export interface ChatMessageInput {
     content: string;
 }
 
-const CHAT_SYSTEM_PROMPT = `You are Evolve, a warm and empathetic AI wellness companion. You help users with:
+const CHAT_SYSTEM_PROMPT = `You are Pluto, a warm and empathetic AI wellness companion. You help users with:
 - Emotional support and mental well-being
 - Personal growth strategies
 - Mindfulness and stress management
@@ -336,7 +366,7 @@ export async function generateWeeklySummary(
         `[${j.date}]: "${j.content.slice(0, 150)}..."`
     ).join('\n');
 
-    const systemPrompt = `You are Evolve, an AI wellness companion. Generate a brief, warm weekly summary of the user's emotional journey. Be specific about patterns you notice. Keep it to 2-3 sentences. Do not use bullet points.`;
+    const systemPrompt = `You are Pluto, an AI wellness companion. Generate a brief, warm weekly summary of the user's emotional journey. Be specific about patterns you notice. Keep it to 2-3 sentences. Do not use bullet points.`;
 
     const userPrompt = `This week's moods: ${moodSummary || 'None logged'}
 Journals:
@@ -374,7 +404,7 @@ export async function generateDeeperAnalysis(
         `[${j.date}]: "${j.content.slice(0, 250)}..."`
     ).join('\n');
 
-    const systemPrompt = `You are Evolve, an AI wellness analyst. Provide a deeper emotional analysis including:
+    const systemPrompt = `You are Pluto, an AI wellness analyst. Provide a deeper emotional analysis including:
 1. Mood patterns and triggers you notice
 2. Emotional growth areas
 3. Specific, actionable suggestions for improvement
@@ -419,7 +449,7 @@ export async function generateComprehensiveAnalysis(
         `[${j.date}]: "${j.content.slice(0, 150)}..."`
     ).join('\n');
 
-    const systemPrompt = `You are Evolve, an AI wellness analyst. Analyze the user's data and provide a structured report.
+    const systemPrompt = `You are Pluto, an AI wellness analyst. Analyze the user's data and provide a structured report.
 Output VALID JSON only. No markdown.
 
 JSON Structure:

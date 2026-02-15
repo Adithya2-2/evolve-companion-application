@@ -4,5 +4,6 @@ export interface JournalEntry {
   content: string;
   wordCount: number;
   charCount: number;
+  isFavorite: boolean;
   updatedAt: Date;
 }

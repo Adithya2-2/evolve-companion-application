@@ -12,7 +12,7 @@ import { MoodEntry, MoodOption, moodOptions } from './types/moods';
 import { JournalEntry } from './types/journal';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { SettingsProvider } from './contexts/SettingsContext';
-import { fetchMoodEntries, insertMoodEntry, fetchJournalEntries, upsertJournalEntry } from './services/database';
+import { fetchMoodEntries, insertMoodEntry, fetchJournalEntries, upsertJournalEntry, toggleJournalFavorite } from './services/database';
 import { ensureEmotionModelsLoaded } from './utils/emotionAnalyzer';
 
 // Error Boundary Component
@@ -146,6 +146,18 @@ const AppContent: React.FC = () => {
     }
   };
 
+  const handleToggleFavorite = async (date: string, isFavorite: boolean) => {
+    if (!user) return;
+    try {
+      await toggleJournalFavorite(date, isFavorite);
+      setJournalHistory(prev => prev.map(entry =>
+        entry.date === date ? { ...entry, isFavorite } : entry
+      ));
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+    }
+  };
+
   // Show loading screen while checking auth
   if (loading) {
     return (
@@ -186,7 +198,11 @@ const AppContent: React.FC = () => {
       case 'Mood Tracker':
         return <MainContent moodHistory={moodHistory} addMoodEntry={addMoodEntry} />;
       case 'Journal':
-        return <JournalPage journalHistory={journalHistory} upsertJournalEntry={handleUpsertJournalEntry} />;
+        return <JournalPage
+          journalHistory={journalHistory}
+          upsertJournalEntry={handleUpsertJournalEntry}
+          onToggleFavorite={handleToggleFavorite}
+        />;
       case 'Insights':
         return <InsightsPage moodHistory={moodHistory} journalHistory={journalHistory} />;
       case 'Interests':

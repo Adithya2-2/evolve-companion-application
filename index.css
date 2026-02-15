@@ -61,9 +61,62 @@ html.light .text-slate-500 {
     color: var(--color-muted) !important;
 }
 
+html.light .text-violet-300 {
+    color: #7c3aed !important;
+    /* violet-600 */
+}
+
+html.light .text-indigo-300 {
+    color: #4f46e5 !important;
+    /* indigo-600 */
+}
+
+html.light .text-sky-300 {
+    color: #0284c7 !important;
+    /* sky-600 */
+}
+
+html.light .text-purple-300 {
+    color: #9333ea !important;
+    /* purple-600 */
+}
+
+html.light .text-green-400 {
+    color: #16a34a !important;
+    /* green-600 */
+}
+
+html.light .text-emerald-400 {
+    color: #059669 !important;
+    /* emerald-600 */
+}
+
+html.light .text-blue-400 {
+    color: #2563eb !important;
+    /* blue-600 */
+}
+
+html.light .text-amber-400 {
+    color: #d97706 !important;
+    /* amber-600 */
+}
+
+html.light .text-pink-400 {
+    color: #db2777 !important;
+    /* pink-600 */
+}
+
 /* Light mode sidebar and card glass */
 html.light .bg-surface-dark\/50 {
-    background-color: rgba(226, 218, 208, 0.6) !important;
+    background-color: rgba(226, 218, 208, 0.9) !important;
+}
+
+html.light .bg-surface-dark\/60 {
+    background-color: rgba(226, 218, 208, 0.95) !important;
+}
+
+html.light .bg-surface-dark\/80 {
+    background-color: rgba(226, 218, 208, 0.98) !important;
 }
 
 html.light .bg-surface-dark\/95 {
@@ -71,21 +124,57 @@ html.light .bg-surface-dark\/95 {
 }
 
 /* Light mode background overlays for AnimatedBackground */
-html.light .bg-background-dark\/50 {
-    background-color: rgba(245, 240, 235, 0.45) !important;
-}
-
-html.light .bg-background-dark\/60 {
-    background-color: rgba(245, 240, 235, 0.55) !important;
-}
-
+/* Light mode background overlays for AnimatedBackground - REDUCED OPACITY to show image */
+html.light .bg-background-dark\/50,
+html.light .bg-background-dark\/60,
 html.light .bg-background-dark\/40 {
-    background-color: rgba(245, 240, 235, 0.35) !important;
+    background-color: rgba(245, 240, 235, 0.2) !important;
+}
+
+/* Light mode overrides for inner elements (stat boxes, lists) */
+html.light .bg-black\/20 {
+    background-color: rgba(226, 218, 208, 0.8) !important;
+    color: var(--color-text-light) !important;
+}
+
+html.light .bg-white\/\[0\.03\] {
+    background-color: rgba(255, 255, 255, 0.6) !important;
+    border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+html.light .bg-white\/5 {
+    background-color: rgba(255, 255, 255, 0.5) !important;
+    border-color: rgba(0, 0, 0, 0.05) !important;
 }
 
 /* Light mode gradient overrides for cards with from-*/
 html.light [class*="from-indigo-900"] {
     --tw-gradient-from: rgba(232, 224, 216, 0.5) !important;
+}
+
+/* ── Dark-mode readability overrides ── */
+/* Make glass cards more solid in dark mode for better text contrast */
+html.dark .bg-surface-dark\/50 {
+    background-color: rgba(46, 59, 80, 0.85) !important;
+}
+
+html.dark .bg-surface-dark\/60 {
+    background-color: rgba(46, 59, 80, 0.9) !important;
+}
+
+html.dark .bg-surface-dark\/80 {
+    background-color: rgba(46, 59, 80, 0.95) !important;
+}
+
+/* Dark mode inner element overrides */
+html.dark .bg-black\/20 {
+    background-color: rgba(0, 0, 0, 0.4) !important;
+    /* Darker background for text */
+}
+
+html.dark .bg-white\/\[0\.03\] {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
 }
 
 /* Light mode shadow adjustments */
@@ -307,4 +396,9 @@ html.dark .cloud-tooltip {
 
 .animate-float-icon {
     animation: float-icon 3s ease-in-out infinite;
+}
+
+/* Animation Delay Utility */
+.animation-delay-100 {
+    animation-delay: 0.1s;
 }

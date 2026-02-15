@@ -404,8 +404,12 @@ export async function generateSuggestions(
     const aiSuggestions = await generateAiSuggestions(profile);
 
     if (aiSuggestions && aiSuggestions.length > 0) {
+        console.log(`[SuggestionEngine] Generated ${aiSuggestions.length} suggestions via Groq.`);
         return mapGroqSuggestions(aiSuggestions, mood);
     }
+
+    // If we got here, Groq failed or returned 0 items
+    console.warn('[SuggestionEngine] Groq returned 0 valid suggestions. Switching to fallback.');
 
     // ── Fallback: heuristic API-based suggestions ──
     console.log('[SuggestionEngine] Groq unavailable/empty, using fallback');
@@ -468,7 +472,11 @@ async function generateFallbackSuggestions(
     }
 
     if (journalKeywords.length > 0) {
-        queries.push(journalKeywords.slice(0, 2).join(' '));
+        // filter out very short words that might have slipped through
+        const validKeywords = journalKeywords.filter(w => w.length > 3);
+        if (validKeywords.length > 0) {
+            queries.push(validKeywords.slice(0, 2).join(' '));
+        }
     }
 
     if (queries.length < 2) {
@@ -497,7 +505,8 @@ async function generateFallbackSuggestions(
     const libraryTitles = new Set(
         (libraryItems || []).map(i => i.name.toLowerCase())
     );
-    const filtered = unique.filter(r => !libraryTitles.has(r.title.toLowerCase()));
+    // Also filter out any items with missing titles
+    const filtered = unique.filter(r => r.title && !libraryTitles.has(r.title.toLowerCase()));
 
     return filtered.map(result => ({
         type: result.type,

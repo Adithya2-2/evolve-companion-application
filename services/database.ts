@@ -92,6 +92,7 @@ export const fetchJournalEntries = async (userId: string): Promise<JournalEntry[
     content: entry.content,
     wordCount: entry.word_count,
     charCount: entry.char_count,
+    isFavorite: entry.is_favorite ?? false,
     updatedAt: new Date(entry.updated_at)
   })) || [];
 };
@@ -116,6 +117,7 @@ export const fetchJournalEntryByDate = async (userId: string, date: string): Pro
     content: data.content,
     wordCount: data.word_count,
     charCount: data.char_count,
+    isFavorite: data.is_favorite ?? false,
     updatedAt: new Date(data.updated_at),
   };
 };
@@ -125,7 +127,8 @@ export const upsertJournalEntry = async (
   date: string,
   content: string,
   wordCount: number,
-  charCount: number
+  charCount: number,
+  isFavorite = false
 ): Promise<JournalEntry> => {
   const { data, error } = await supabase
     .from('journal_entries')
@@ -135,6 +138,7 @@ export const upsertJournalEntry = async (
       content,
       word_count: wordCount,
       char_count: charCount,
+      is_favorite: isFavorite,
       updated_at: new Date().toISOString()
     })
     .select()
@@ -150,6 +154,7 @@ export const upsertJournalEntry = async (
     content: data.content,
     wordCount: data.word_count,
     charCount: data.char_count,
+    isFavorite: data.is_favorite ?? false,
     updatedAt: new Date(data.updated_at)
   };
 };
@@ -163,6 +168,19 @@ export const deleteJournalEntry = async (date: string): Promise<void> => {
 
   if (error) {
     console.error('Error deleting journal entry:', error);
+    throw error;
+  }
+};
+
+export const toggleJournalFavorite = async (date: string, isFavorite: boolean): Promise<void> => {
+  const { error } = await supabase
+    .from('journal_entries')
+    .update({ is_favorite: isFavorite })
+    .eq('date', date)
+    .eq('user_id', (await supabase.auth.getUser()).data.user?.id);
+
+  if (error) {
+    console.error('Error toggling favorite:', error);
     throw error;
   }
 };
@@ -537,6 +555,7 @@ export const fetchRecentJournalEntries = async (
     content: entry.content,
     wordCount: entry.word_count,
     charCount: entry.char_count,
+    isFavorite: entry.is_favorite ?? false,
     updatedAt: new Date(entry.updated_at),
   }));
 };
