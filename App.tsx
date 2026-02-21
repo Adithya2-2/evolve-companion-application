@@ -196,7 +196,7 @@ const AppContent: React.FC = () => {
   const PageComponent = () => {
     switch (activePage) {
       case 'Mood Tracker':
-        return <MainContent moodHistory={moodHistory} addMoodEntry={addMoodEntry} />;
+        return <MainContent moodHistory={moodHistory} addMoodEntry={addMoodEntry} setActivePage={setActivePage} />;
       case 'Journal':
         return <JournalPage
           journalHistory={journalHistory}
@@ -208,7 +208,7 @@ const AppContent: React.FC = () => {
       case 'Interests':
         return <InterestsPage />;
       default:
-        return <MainContent moodHistory={moodHistory} addMoodEntry={addMoodEntry} />;
+        return <MainContent moodHistory={moodHistory} addMoodEntry={addMoodEntry} setActivePage={setActivePage} />;
     }
   }
 

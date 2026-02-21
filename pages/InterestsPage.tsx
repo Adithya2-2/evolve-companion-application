@@ -10,7 +10,7 @@ import SuggestionsPanel from '../components/SuggestionsPanel';
 const InterestsPage: React.FC = () => {
     return (
         <main className="flex-1 relative overflow-hidden flex flex-col bg-surface-darker">
-            <AnimatedBackground theme="adventure" />
+            <AnimatedBackground />
 
             <div className="relative z-10 flex flex-col h-full p-6 md:p-8 overflow-y-auto">
                 {/* Header */}

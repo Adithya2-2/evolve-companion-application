@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useSettings } from '../contexts/SettingsContext';
 import {
-    BACKGROUND_PRESETS,
     FONT_OPTIONS,
     FONT_SIZE_OPTIONS,
     UserSettings,
@@ -24,51 +23,38 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
     if (!isOpen) return null;
 
     // ── Background handlers ──
-    const handlePresetSelect = (key: string) => {
-        updateSettings({ backgroundType: 'preset', backgroundPreset: key, backgroundUrl: null });
-    };
-
-    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = () => {
-            updateSettings({
-                backgroundType: 'upload',
-                backgroundUrl: reader.result as string,
-            });
-        };
-        reader.readAsDataURL(file);
-    };
 
     const handlePromptGenerate = async () => {
         if (!promptInput.trim()) return;
         setGeneratingBg(true);
-        // Use Unsplash Source as a proxy for AI background generation
-        const query = encodeURIComponent(promptInput.trim());
-        const url = `https://source.unsplash.com/2560x1440/?${query}`;
-        // pre-fetch to verify it loads
+
+        // Enhance prompt for better aesthetics and ensure it generates
+        const query = encodeURIComponent(promptInput.trim() + " high res aesthetic wallpaper, immersive background");
+        // Use the updated, stable Pollinations endpoint
+        const url = `https://pollinations.ai/p/${query}?width=2560&height=1440&nologo=true`;
+
+        // Pre-fetch to verify it loads completely before applying
         try {
             await new Promise<void>((resolve, reject) => {
                 const img = new Image();
                 img.onload = () => resolve();
-                img.onerror = () => reject();
+                img.onerror = () => reject(new Error('Failed to load generated AI image'));
                 img.src = url;
             });
+
+            // Only update settings if the image loaded successfully
             updateSettings({
                 backgroundType: 'generated',
                 backgroundUrl: url,
                 backgroundPrompt: promptInput.trim(),
             });
-        } catch {
-            // Fall back — just set the URL anyway
-            updateSettings({
-                backgroundType: 'generated',
-                backgroundUrl: url,
-                backgroundPrompt: promptInput.trim(),
-            });
+        } catch (error) {
+            console.error('[Settings] AI Image Generation failed:', error);
+            // DO NOT set the URL. Fallback cleanly. Let the user know it failed.
+            alert("AI generation failed or timed out. Please try a different prompt or try again later.");
+        } finally {
+            setGeneratingBg(false);
         }
-        setGeneratingBg(false);
     };
 
     // ── Tab renderers ──
@@ -108,67 +94,31 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
 
             {/* Background section */}
             <section>
-                <h4 className="text-sm font-semibold text-text-light mb-3 flex items-center gap-2">
-                    <span className="material-symbols-outlined text-base">wallpaper</span>
-                    Background
-                </h4>
-
-                {/* Presets */}
-                <p className="text-xs text-slate-400 mb-2">Presets</p>
-                <div className="grid grid-cols-3 gap-2 mb-4">
-                    {Object.entries(BACKGROUND_PRESETS).map(([key, preset]) => (
+                <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-sm font-semibold text-text-light flex items-center gap-2">
+                        <span className="material-symbols-outlined text-base">auto_awesome</span>
+                        AI Background
+                    </h4>
+                    {settings.backgroundUrl && (
                         <button
-                            key={key}
-                            onClick={() => handlePresetSelect(key)}
-                            className={`relative rounded-xl overflow-hidden h-20 border-2 transition-all duration-300 group ${settings.backgroundType === 'preset' && settings.backgroundPreset === key
-                                ? 'border-primary shadow-lg shadow-primary/20'
-                                : 'border-white/10 hover:border-white/30'
-                                }`}
+                            onClick={() => updateSettings({ backgroundType: 'default', backgroundUrl: null, backgroundPrompt: null })}
+                            className="text-xs text-slate-400 hover:text-red-400 transition-colors"
                         >
-                            <img
-                                src={preset.url}
-                                alt={preset.label}
-                                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                            />
-                            <div className="absolute inset-0 bg-black/40 flex items-end p-1.5">
-                                <span className="text-[10px] font-medium text-white/90">{preset.label}</span>
-                            </div>
-                            {settings.backgroundType === 'preset' && settings.backgroundPreset === key && (
-                                <div className="absolute top-1 right-1 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-                                    <span className="material-symbols-outlined text-white text-xs">check</span>
-                                </div>
-                            )}
+                            Reset to Default
                         </button>
-                    ))}
+                    )}
                 </div>
 
-                {/* Upload */}
-                <p className="text-xs text-slate-400 mb-2">Upload Custom Image</p>
-                <button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="w-full flex items-center justify-center gap-2 p-3 rounded-xl border border-dashed border-white/20 hover:border-primary/50 hover:bg-white/5 transition-all text-sm text-slate-300"
-                >
-                    <span className="material-symbols-outlined text-base">upload</span>
-                    Choose Image
-                </button>
-                <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleImageUpload}
-                    aria-label="Upload custom background image"
-                />
-
-                {/* AI Prompt */}
-                <p className="text-xs text-slate-400 mb-2 mt-4">Generate with AI Prompt</p>
+                <p className="text-xs text-slate-400 mb-3 leading-relaxed">
+                    Describe a sanctuary, landscape, or mood, and the AI will generate a bespoke background for your application.
+                </p>
                 <div className="flex gap-2">
                     <input
                         type="text"
                         value={promptInput}
                         onChange={e => setPromptInput(e.target.value)}
                         onKeyDown={e => e.key === 'Enter' && handlePromptGenerate()}
-                        placeholder="e.g. dreamy aurora night sky..."
+                        placeholder="e.g. dreamy aurora night sky at the lake..."
                         className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-text-light placeholder-slate-500 focus:outline-none focus:border-primary/50"
                     />
                     <button
@@ -179,6 +129,15 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
                         {generatingBg ? '...' : 'Generate'}
                     </button>
                 </div>
+                {settings.backgroundUrl && settings.backgroundPrompt && (
+                    <div className="mt-3 p-3 rounded-xl bg-primary/5 border border-primary/10 flex items-start gap-3">
+                        <span className="material-symbols-outlined text-primary text-xl mt-0.5">check_circle</span>
+                        <div>
+                            <p className="text-sm text-text-light font-medium">Active Generation</p>
+                            <p className="text-xs text-slate-400 mt-1 line-clamp-2">"{settings.backgroundPrompt}"</p>
+                        </div>
+                    </div>
+                )}
             </section>
 
             {/* Typography section */}

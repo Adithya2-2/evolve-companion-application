@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { fetchUserInterests, upsertUserInterest, deleteUserInterest } from '../services/database';
 import type { UserInterest } from '../types/interests';
-import { SUGGESTED_INTERESTS } from '../types/interests';
+import { SUGGESTED_INTERESTS, SUGGESTED_MUSIC_GENRES } from '../types/interests';
 import ContentSearchInput from './ContentSearchInput';
 import type { ApiResult } from '../services/recommendationApi';
 
@@ -14,77 +14,29 @@ import type { ApiResult } from '../services/recommendationApi';
  */
 const GenreInterests: React.FC = () => {
     const { user } = useAuth();
-    const [interests, setInterests] = useState<UserInterest[]>([]);
-    const [libraryItems, setLibraryItems] = useState<UserInterest[]>([]);
+    const [generalInterests, setGeneralInterests] = useState<UserInterest[]>([]);
+    const [musicInterests, setMusicInterests] = useState<UserInterest[]>([]);
     const [newInterest, setNewInterest] = useState('');
-    const [activeTab, setActiveTab] = useState<'interests' | 'library'>('interests');
+    const [activeTab, setActiveTab] = useState<'interests' | 'music'>('interests');
 
     const loadData = useCallback(async () => {
         if (!user) return;
         const all = await fetchUserInterests(user.id);
-        setInterests(all.filter(i => i.interestType === 'genre'));
-        setLibraryItems(all.filter(i => i.interestType === 'item'));
+        const allGenres = all.filter(i => i.interestType === 'genre');
+        setGeneralInterests(allGenres.filter(i => i.category !== 'music_genre'));
+        setMusicInterests(allGenres.filter(i => i.category === 'music_genre'));
     }, [user]);
 
     useEffect(() => { loadData(); }, [loadData]);
 
     // ──── Add broad interest tag ────
-    const addInterest = async (name: string) => {
+    const addInterest = async (name: string, isMusic: boolean = false) => {
         if (!user || !name.trim()) return;
         const trimmed = name.trim();
-        if (interests.some(i => i.name.toLowerCase() === trimmed.toLowerCase())) return;
-        await upsertUserInterest(user.id, 'genre', trimmed, 0.5, 'genre');
+        const targetList = isMusic ? musicInterests : generalInterests;
+        if (targetList.some(i => i.name.toLowerCase() === trimmed.toLowerCase())) return;
+        await upsertUserInterest(user.id, isMusic ? 'music_genre' : 'genre', trimmed, 0.5, 'genre');
         setNewInterest('');
-        await loadData();
-    };
-
-    // ──── Add library item from autocomplete ────
-    const handleSearchSelect = async (item: ApiResult) => {
-        if (!user) return;
-
-        // Build rich metadata from the API result
-        const metadata: Record<string, any> = {
-            author: item.author,
-            description: item.description,
-            imageUrl: item.imageUrl,
-            genres: item.genres,
-            year: item.year,
-            externalId: item.externalId,
-            source: item.source,
-            contentType: item.type, // book, movie, podcast, music
-        };
-
-        // Determine default status based on type
-        const defaultStatus = item.type === 'movie' ? 'watched'
-            : item.type === 'music' ? 'listened'
-                : item.type === 'podcast' ? 'listened'
-                    : 'want_to_read';
-
-        await upsertUserInterest(
-            user.id,
-            'genre',
-            item.title,
-            0.7,
-            'item',
-            defaultStatus,
-            metadata
-        );
-
-        // Also auto-add genres as broad interests (if not already present)
-        for (const genre of item.genres.slice(0, 3)) {
-            const exists = interests.some(i => i.name.toLowerCase() === genre.toLowerCase());
-            if (!exists) {
-                await upsertUserInterest(user.id, 'genre', genre, 0.5, 'genre');
-            }
-        }
-
-        await loadData();
-    };
-
-    // ──── Update item status ────
-    const updateItemStatus = async (item: UserInterest, status: string) => {
-        if (!user) return;
-        await upsertUserInterest(user.id, item.category, item.name, item.score, 'item', status, item.metadata);
         await loadData();
     };
 
@@ -94,7 +46,11 @@ const GenreInterests: React.FC = () => {
     };
 
     const unusedSuggestions = SUGGESTED_INTERESTS.filter(
-        s => !interests.some(i => i.name.toLowerCase() === s.toLowerCase())
+        s => !generalInterests.some(i => i.name.toLowerCase() === s.toLowerCase())
+    ).slice(0, 8);
+
+    const unusedMusicSuggestions = SUGGESTED_MUSIC_GENRES.filter(
+        s => !musicInterests.some(i => i.name.toLowerCase() === s.toLowerCase())
     ).slice(0, 8);
 
     const STATUS_CONFIG: Record<string, { label: string; icon: string; color: string }> = {
@@ -122,7 +78,7 @@ const GenreInterests: React.FC = () => {
                         My Interests
                     </h2>
                     <span className="text-[10px] text-slate-500 bg-white/5 px-2 py-1 rounded-full">
-                        {interests.length} genres • {libraryItems.length} items
+                        {generalInterests.length + musicInterests.length} genres
                     </span>
                 </div>
 
@@ -136,17 +92,17 @@ const GenreInterests: React.FC = () => {
                             }`}
                     >
                         <span className="material-symbols-outlined text-sm">category</span>
-                        Genres & Topics
+                        Genres
                     </button>
                     <button
-                        onClick={() => setActiveTab('library')}
-                        className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-xs font-medium transition-all ${activeTab === 'library'
-                            ? 'bg-gradient-to-r from-blue-500/20 to-indigo-500/10 text-blue-400 shadow-sm'
+                        onClick={() => setActiveTab('music')}
+                        className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-xs font-medium transition-all ${activeTab === 'music'
+                            ? 'bg-gradient-to-r from-pink-500/20 to-rose-500/10 text-pink-400 shadow-sm'
                             : 'text-slate-400 hover:text-white'
                             }`}
                     >
-                        <span className="material-symbols-outlined text-sm">local_library</span>
-                        My Library
+                        <span className="material-symbols-outlined text-sm">music_note</span>
+                        Music DNA
                     </button>
                 </div>
             </div>
@@ -157,7 +113,7 @@ const GenreInterests: React.FC = () => {
                     <div>
                         {/* Current interests as chips */}
                         <div className="flex flex-wrap gap-2 mb-4">
-                            {interests.map(i => (
+                            {generalInterests.map(i => (
                                 <span
                                     key={i.id}
                                     className="group flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-brand-green/15 to-emerald-500/10 border border-brand-green/20 rounded-full text-xs text-brand-green font-medium transition-all hover:border-brand-green/40 hover:shadow-sm hover:shadow-brand-green/10"
@@ -172,7 +128,7 @@ const GenreInterests: React.FC = () => {
                                     </button>
                                 </span>
                             ))}
-                            {interests.length === 0 && (
+                            {generalInterests.length === 0 && (
                                 <p className="text-xs text-slate-500 italic">No genres yet — add some to power AI suggestions</p>
                             )}
                         </div>
@@ -183,12 +139,12 @@ const GenreInterests: React.FC = () => {
                                 type="text"
                                 value={newInterest}
                                 onChange={e => setNewInterest(e.target.value)}
-                                onKeyDown={e => e.key === 'Enter' && addInterest(newInterest)}
+                                onKeyDown={e => e.key === 'Enter' && addInterest(newInterest, false)}
                                 placeholder="Add genre or topic..."
                                 className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-text-light placeholder-slate-500 focus:outline-none focus:border-brand-green/50 transition-all"
                             />
                             <button
-                                onClick={() => addInterest(newInterest)}
+                                onClick={() => addInterest(newInterest, false)}
                                 disabled={!newInterest.trim()}
                                 className="px-3 py-2 bg-brand-green/20 text-brand-green rounded-xl text-xs font-medium hover:bg-brand-green/30 transition-all disabled:opacity-30"
                             >
@@ -207,7 +163,7 @@ const GenreInterests: React.FC = () => {
                                     {unusedSuggestions.map(name => (
                                         <button
                                             key={name}
-                                            onClick={() => addInterest(name)}
+                                            onClick={() => addInterest(name, false)}
                                             className="px-2.5 py-1 bg-white/5 border border-white/5 rounded-full text-[11px] text-slate-400 hover:text-brand-green hover:bg-brand-green/10 hover:border-brand-green/20 transition-all"
                                         >
                                             + {name}
@@ -219,93 +175,70 @@ const GenreInterests: React.FC = () => {
                     </div>
                 )}
 
-                {/* ─── Library Tab ─── */}
-                {activeTab === 'library' && (
+                {/* ─── Music DNA Tab ─── */}
+                {activeTab === 'music' && (
                     <div>
-                        {/* Autocomplete search */}
-                        <div className="mb-4">
-                            <ContentSearchInput onSelectItem={handleSearchSelect} />
-                        </div>
-
-                        {/* Library items */}
-                        <div className="space-y-2 max-h-[320px] overflow-y-auto pr-1">
-                            {libraryItems.length === 0 ? (
-                                <div className="text-center py-6">
-                                    <span className="material-symbols-outlined text-3xl text-slate-600 mb-2 block">library_add</span>
-                                    <p className="text-xs text-slate-500">Search and add items above.</p>
-                                    <p className="text-[10px] text-slate-600 mt-1">
-                                        Adding items teaches the AI about your taste.
-                                    </p>
-                                </div>
-                            ) : (
-                                libraryItems.map(item => {
-                                    const contentType = item.metadata?.contentType || 'book';
-                                    const typeConf = TYPE_ICONS[contentType] || TYPE_ICONS.book;
-                                    const statusConf = STATUS_CONFIG[item.status || 'want_to_read'] || STATUS_CONFIG.want_to_read;
-                                    const itemGenres: string[] = item.metadata?.genres || [];
-
-                                    return (
-                                        <div
-                                            key={item.id}
-                                            className="group flex items-start gap-3 p-3 bg-white/[0.03] border border-white/5 rounded-xl hover:bg-white/[0.06] hover:border-white/10 transition-all"
-                                        >
-                                            {/* Thumbnail */}
-                                            {item.metadata?.imageUrl ? (
-                                                <img
-                                                    src={item.metadata.imageUrl}
-                                                    alt={item.name}
-                                                    className="w-10 h-14 object-cover rounded-lg bg-white/5 shrink-0"
-                                                    onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                                                />
-                                            ) : (
-                                                <div className="w-10 h-14 bg-white/5 rounded-lg flex items-center justify-center shrink-0">
-                                                    <span className={`material-symbols-outlined ${typeConf.color} text-lg opacity-40`}>{typeConf.icon}</span>
-                                                </div>
-                                            )}
-
-                                            {/* Info */}
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center gap-1.5">
-                                                    <span className={`material-symbols-outlined text-xs ${typeConf.color}`}>{typeConf.icon}</span>
-                                                    <p className="text-xs font-semibold text-text-light truncate">{item.name}</p>
-                                                </div>
-                                                {item.metadata?.author && (
-                                                    <p className="text-[10px] text-slate-500 truncate">{item.metadata.author}</p>
-                                                )}
-                                                {/* Genre tags */}
-                                                {itemGenres.length > 0 && (
-                                                    <div className="flex flex-wrap gap-1 mt-1">
-                                                        {itemGenres.slice(0, 3).map((g: string) => (
-                                                            <span key={g} className="text-[9px] px-1.5 py-0.5 bg-primary/10 text-primary/70 rounded-full">{g}</span>
-                                                        ))}
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            {/* Status + Actions */}
-                                            <div className="flex items-center gap-1.5 shrink-0">
-                                                <select
-                                                    value={item.status || 'want_to_read'}
-                                                    onChange={e => updateItemStatus(item, e.target.value)}
-                                                    className="text-[10px] bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-slate-300 focus:outline-none appearance-none cursor-pointer"
-                                                    aria-label="Filter status"
-                                                >
-                                                    {Object.entries(STATUS_CONFIG).map(([val, conf]) => (
-                                                        <option key={val} value={val}>{conf.label}</option>
-                                                    ))}
-                                                </select>
-                                                <button
-                                                    onClick={() => removeInterest(item.id)}
-                                                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:text-red-400"
-                                                >
-                                                    <span className="material-symbols-outlined text-xs text-slate-600">delete</span>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    );
-                                })
+                        {/* Current interests as chips */}
+                        <div className="flex flex-wrap gap-2 mb-4">
+                            {musicInterests.map(i => (
+                                <span
+                                    key={i.id}
+                                    className="group flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-pink-500/15 to-rose-500/10 border border-pink-500/20 rounded-full text-xs text-pink-400 font-medium transition-all hover:border-pink-500/40 hover:shadow-sm hover:shadow-pink-500/10"
+                                >
+                                    <span className="material-symbols-outlined text-[11px]">music_note</span>
+                                    {i.name}
+                                    <button
+                                        onClick={() => removeInterest(i.id)}
+                                        className="opacity-0 group-hover:opacity-100 transition-opacity ml-0.5 hover:text-red-400"
+                                    >
+                                        <span className="material-symbols-outlined text-xs">close</span>
+                                    </button>
+                                </span>
+                            ))}
+                            {musicInterests.length === 0 && (
+                                <p className="text-xs text-slate-500 italic">No music genres yet — add some to construct your Music DNA</p>
                             )}
                         </div>
+
+                        {/* Add custom interest */}
+                        <div className="flex gap-2 mb-4">
+                            <input
+                                type="text"
+                                value={newInterest}
+                                onChange={e => setNewInterest(e.target.value)}
+                                onKeyDown={e => e.key === 'Enter' && addInterest(newInterest, true)}
+                                placeholder="Add music genre..."
+                                className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-text-light placeholder-slate-500 focus:outline-none focus:border-pink-500/50 transition-all"
+                            />
+                            <button
+                                onClick={() => addInterest(newInterest, true)}
+                                disabled={!newInterest.trim()}
+                                className="px-3 py-2 bg-pink-500/20 text-pink-400 rounded-xl text-xs font-medium hover:bg-pink-500/30 transition-all disabled:opacity-30"
+                            >
+                                <span className="material-symbols-outlined text-sm">add</span>
+                            </button>
+                        </div>
+
+                        {/* Quick-add suggestions */}
+                        {unusedMusicSuggestions.length > 0 && (
+                            <div>
+                                <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1">
+                                    <span className="material-symbols-outlined text-[10px]">auto_awesome</span>
+                                    Suggested
+                                </p>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {unusedMusicSuggestions.map(name => (
+                                        <button
+                                            key={name}
+                                            onClick={() => addInterest(name, true)}
+                                            className="px-2.5 py-1 bg-white/5 border border-white/5 rounded-full text-[11px] text-slate-400 hover:text-pink-400 hover:bg-pink-500/10 hover:border-pink-500/20 transition-all"
+                                        >
+                                            + {name}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>

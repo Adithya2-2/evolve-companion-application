@@ -15,10 +15,11 @@ export interface UserInterest {
     createdAt: Date;
 }
 
-export type InterestCategory = 'genre' | 'topic' | 'skill' | 'creator';
+export type InterestCategory = 'genre' | 'topic' | 'skill' | 'creator' | 'music_genre';
 
 export const INTEREST_CATEGORIES: { value: InterestCategory; label: string; icon: string }[] = [
     { value: 'genre', label: 'Genre', icon: 'category' },
+    { value: 'music_genre', label: 'Music', icon: 'music_note' },
     { value: 'topic', label: 'Topic', icon: 'topic' },
     { value: 'skill', label: 'Skill', icon: 'build' },
     { value: 'creator', label: 'Creator', icon: 'person' },
@@ -29,8 +30,14 @@ export const INTEREST_CATEGORIES: { value: InterestCategory; label: string; icon
 export const SUGGESTED_INTERESTS = [
     'Psychology', 'Sci-Fi', 'Productivity', 'Philosophy', 'Technology',
     'History', 'Self-Help', 'Fiction', 'Business', 'Biographies',
-    'Science', 'Art', 'Music', 'Health', 'Spirituality',
+    'Science', 'Art', 'Health', 'Spirituality',
     'Comedy', 'True Crime', 'Fantasy', 'Romance', 'Thriller',
+];
+
+export const SUGGESTED_MUSIC_GENRES = [
+    'Lo-Fi', 'Indie Folk', 'Synthwave', 'Classical', 'Ambient',
+    'Jazz', 'Hip Hop', 'R&B', 'EDM', 'Pop', 'Rock', 'Acoustic',
+    'Neo-Soul', 'Chillhop', 'Metal', 'Blues', 'Country', 'Electronic'
 ];
 
 /* ───── Content Suggestions ───── */

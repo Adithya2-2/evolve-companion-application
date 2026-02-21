@@ -2,29 +2,28 @@
 import React, { useState, useRef, useEffect } from 'react';
 
 interface ToolbarButtonProps {
-  icon: string;
-  onClick: () => void;
-  isActive?: boolean;
+    icon: string;
+    onClick: () => void;
+    isActive?: boolean;
 }
 
 const ToolbarButton: React.FC<ToolbarButtonProps> = ({ icon, onClick, isActive }) => (
-  <button 
-    onClick={onClick}
-    onMouseDown={(e) => e.preventDefault()} // Prevent editor from losing focus
-    className={`p-2 rounded-lg transition-colors ${
-      isActive
-        ? 'bg-primary/20 text-primary'
-        : 'hover:bg-white/5 text-slate-400 hover:text-primary'
-    }`}
-  >
-    <span className="material-symbols-outlined text-xl">{icon}</span>
-  </button>
+    <button
+        onClick={onClick}
+        onMouseDown={(e) => e.preventDefault()} // Prevent editor from losing focus
+        className={`p-2 rounded-lg transition-colors ${isActive
+            ? 'bg-primary/20 text-primary'
+            : 'hover:bg-white/5 text-slate-400 hover:text-primary'
+            }`}
+    >
+        <span className="material-symbols-outlined text-xl">{icon}</span>
+    </button>
 );
 
 interface JournalEditorProps {
-  initialContent?: string;
-  onSave?: (content: string, wordCount: number, charCount: number) => void;
-  appendRequest?: { id: number; text: string } | null;
+    initialContent?: string;
+    onSave?: (content: string, wordCount: number, charCount: number) => void;
+    appendRequest?: { id: number; text: string } | null;
 }
 
 const JournalEditor: React.FC<JournalEditorProps> = ({ initialContent, onSave, appendRequest }) => {
@@ -95,7 +94,7 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialContent, onSave, a
     }, [appendRequest]);
 
     return (
-        <div className="h-full bg-surface-dark/50 backdrop-blur-md border border-white/10 rounded-2xl shadow-xl flex flex-col overflow-hidden">
+        <div className="h-full bg-surface-darker/95 border border-white/10 rounded-2xl shadow-xl flex flex-col overflow-hidden">
             <div className="flex items-center gap-1 p-3 border-b border-white/5 bg-surface-dark/30 flex-wrap">
                 <ToolbarButton icon="format_bold" onClick={() => handleFormat('bold')} isActive={activeFormats.bold} />
                 <ToolbarButton icon="format_italic" onClick={() => handleFormat('italic')} isActive={activeFormats.italic} />
@@ -110,14 +109,13 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialContent, onSave, a
                 <div className="flex-1"></div>
                 <span className="text-xs text-slate-500 font-medium px-2">Saved just now</span>
             </div>
-            <div 
+            <div
                 ref={editorRef}
                 contentEditable={true}
                 onInput={updateCounts}
                 onFocus={updateActiveFormats}
-                className="flex-1 w-full bg-transparent border-none focus:ring-0 p-6 text-text-light text-lg leading-relaxed placeholder:text-slate-500 resize-none overflow-y-auto"
+                className="flex-1 w-full bg-transparent border-none focus:ring-0 p-6 text-text-light text-lg leading-relaxed placeholder:text-slate-500 resize-none overflow-y-auto min-h-[200px]"
                 data-placeholder="What's on your mind today, Alex? Let your thoughts flow freely..."
-                style={{ minHeight: '200px' }}
             ></div>
             <div className="p-4 flex justify-between items-center bg-gradient-to-t from-surface-dark/50 to-transparent">
                 <span className="text-xs text-slate-400 font-medium">{wordCount} words / {charCount} characters</span>

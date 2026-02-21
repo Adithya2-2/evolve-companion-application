@@ -106,30 +106,9 @@ html.light .text-pink-400 {
     /* pink-600 */
 }
 
-/* Light mode sidebar and card glass */
-html.light .bg-surface-dark\/50 {
-    background-color: rgba(226, 218, 208, 0.9) !important;
-}
+/* Light mode sidebar and card glass - removed background tint overrides to keep original image visible and maintain translucent glass */
 
-html.light .bg-surface-dark\/60 {
-    background-color: rgba(226, 218, 208, 0.95) !important;
-}
-
-html.light .bg-surface-dark\/80 {
-    background-color: rgba(226, 218, 208, 0.98) !important;
-}
-
-html.light .bg-surface-dark\/95 {
-    background-color: rgba(232, 224, 216, 0.97) !important;
-}
-
-/* Light mode background overlays for AnimatedBackground */
 /* Light mode background overlays for AnimatedBackground - REDUCED OPACITY to show image */
-html.light .bg-background-dark\/50,
-html.light .bg-background-dark\/60,
-html.light .bg-background-dark\/40 {
-    background-color: rgba(245, 240, 235, 0.2) !important;
-}
 
 /* Light mode overrides for inner elements (stat boxes, lists) */
 html.light .bg-black\/20 {
@@ -153,18 +132,7 @@ html.light [class*="from-indigo-900"] {
 }
 
 /* ── Dark-mode readability overrides ── */
-/* Make glass cards more solid in dark mode for better text contrast */
-html.dark .bg-surface-dark\/50 {
-    background-color: rgba(46, 59, 80, 0.85) !important;
-}
-
-html.dark .bg-surface-dark\/60 {
-    background-color: rgba(46, 59, 80, 0.9) !important;
-}
-
-html.dark .bg-surface-dark\/80 {
-    background-color: rgba(46, 59, 80, 0.95) !important;
-}
+/* Make glass cards translucent in dark mode as well (removing solid backgrounds) */
 
 /* Dark mode inner element overrides */
 html.dark .bg-black\/20 {
@@ -401,4 +369,23 @@ html.dark .cloud-tooltip {
 /* Animation Delay Utility */
 .animation-delay-100 {
     animation-delay: 0.1s;
+}
+
+/* Glass Outline Overrides for Readability */
+.backdrop-blur-md,
+.backdrop-blur-lg,
+.bg-surface-dark\/50,
+.bg-surface-dark\/60,
+.bg-black\/20 {
+    text-shadow: 0px 0px 4px rgba(255, 255, 255, 0.4), 0px 1px 2px rgba(255, 255, 255, 0.6);
+    -webkit-text-stroke: 0.5px rgba(0, 0, 0, 0.5);
+}
+
+html.dark .backdrop-blur-md,
+html.dark .backdrop-blur-lg,
+html.dark .bg-surface-dark\/50,
+html.dark .bg-surface-dark\/60,
+html.dark .bg-black\/20 {
+    text-shadow: 0px 0px 4px rgba(0, 0, 0, 0.6), 0px 1px 2px rgba(0, 0, 0, 0.8);
+    -webkit-text-stroke: 0.5px rgba(0, 0, 0, 0.8);
 }

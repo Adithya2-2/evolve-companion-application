@@ -1,5 +1,5 @@
-
 import { MoodOption } from '../types/moods';
+import { SUGGESTED_INTERESTS, SUGGESTED_MUSIC_GENRES } from '../types/interests';
 
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const MODEL = 'llama-3.3-70b-versatile';  // fast, intelligent, 100k daily limit
@@ -52,23 +52,30 @@ export interface ChatMessage {
 async function getGroqChatCompletion(
     messages: ChatMessage[],
     maxTokens = 1024,
-    temperature = 0.7
+    temperature = 0.7,
+    jsonMode = false
 ): Promise<string> {
     const apiKey = getApiKey();
 
     try {
+        const bodyPayload: any = {
+            model: MODEL,
+            messages,
+            max_tokens: maxTokens,
+            temperature,
+        };
+
+        if (jsonMode) {
+            bodyPayload.response_format = { type: 'json_object' };
+        }
+
         const res = await fetch(GROQ_API_URL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${apiKey}`,
             },
-            body: JSON.stringify({
-                model: MODEL,
-                messages,
-                max_tokens: maxTokens,
-                temperature,
-            }),
+            body: JSON.stringify(bodyPayload),
         });
 
         if (!res.ok) {
@@ -153,12 +160,7 @@ JSON STRUCTURE:
     }
   ]
 }
-      "reason": "Why it fits their mood.",
-      "benefit": "Mental health benefit.",
-      "genres": ["Genre1"]
-    }
-  ]
-}
+
 IMPORTANT: 
 - valid types are ONLY: "book", "movie", "podcast", "music".
 - Return ONLY the raw JSON string.
@@ -180,7 +182,7 @@ Suggest 4 items now. JSON only.`;
         const raw = await getGroqChatCompletion([
             { role: 'system', content: systemPrompt },
             { role: 'user', content: userPrompt },
-        ], 1500, 0.7);
+        ], 1500, 0.7, true);
 
         const cleaned = extractJson(raw);
         console.log('[Groq] Raw AI response cleaned:', cleaned.slice(0, 100) + '...');
@@ -244,7 +246,7 @@ Provide insight in JSON.`;
         const raw = await getGroqChatCompletion([
             { role: 'system', content: systemPrompt },
             { role: 'user', content: userPrompt },
-        ], 500, 0.7);
+        ], 500, 0.7, true);
 
         const cleaned = extractJson(raw);
         const parsed = JSON.parse(cleaned);
@@ -475,7 +477,7 @@ Provide comprehensive analysis in JSON.`;
         const raw = await getGroqChatCompletion([
             { role: 'system', content: systemPrompt },
             { role: 'user', content: userPrompt },
-        ], 1200, 0.7);
+        ], 1200, 0.7, true);
 
         const cleaned = extractJson(raw);
         const parsed = JSON.parse(cleaned);
@@ -490,3 +492,54 @@ Provide comprehensive analysis in JSON.`;
         throw e;
     }
 }
+
+export async function inferItemGenres(
+    title: string,
+    author: string | null,
+    description: string | null,
+    type: 'book' | 'movie' | 'podcast' | 'music'
+): Promise<string[]> {
+    const isMusic = type === 'music';
+    const allowedGenres = isMusic ? SUGGESTED_MUSIC_GENRES : SUGGESTED_INTERESTS;
+
+    const systemPrompt = `You are a strict categorization AI. Your job is to classify a ${type} into EXACTLY 1 to 3 genres from the provided ALLOWED_GENRES list.
+    
+ALLOWED_GENRES: ${allowedGenres.join(', ')}
+
+RULES:
+1. ONLY use exact matches from the ALLOWED_GENRES list.
+2. Return purely VALID JSON.
+3. No markdown formatting.
+4. Output strict JSON structure: { "genres": ["Genre1", "Genre2"] }`;
+
+    const userPrompt = `Title: ${title}
+Author/Creator: ${author || 'Unknown'}
+Description: ${description || 'No description provided'}
+
+Classify this ${type} strictly using the allowed genres. JSON only.`;
+
+    try {
+        const raw = await getGroqChatCompletion([
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt },
+        ], 100, 0.1, true); // Low temperature for consistency
+
+        const cleaned = extractJson(raw);
+        const parsed = JSON.parse(cleaned);
+
+        let genres = Array.isArray(parsed.genres) ? parsed.genres : [];
+
+        // Filter out any AI hallucinations
+        genres = genres.filter((g: any) => typeof g === 'string' && allowedGenres.includes(g));
+
+        if (genres.length === 0) {
+            return isMusic ? ['Pop'] : ['Fiction']; // Fallback
+        }
+
+        return genres;
+    } catch (e) {
+        console.error('[Groq] Infer Genres Error:', e);
+        return isMusic ? ['Pop'] : ['Fiction']; // Fallback
+    }
+}
+

@@ -1,7 +1,11 @@
 
 import React from 'react';
 
-const JourneyStreakCard: React.FC = () => {
+interface JourneyStreakCardProps {
+  setActivePage: (page: string) => void;
+}
+
+const JourneyStreakCard: React.FC<JourneyStreakCardProps> = ({ setActivePage }) => {
   return (
     <div className="bg-surface-dark/80 backdrop-blur-md border border-white/10 p-6 rounded-2xl shadow-lg relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
       <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity duration-300">
@@ -20,7 +24,10 @@ const JourneyStreakCard: React.FC = () => {
         <span>Last check-in: Yesterday</span>
         <span className="text-accent-teal font-bold">Keep exploring!</span>
       </div>
-      <button className="w-full py-3 rounded-xl border border-white/10 bg-surface-dark/50 hover:bg-white/10 text-slate-300 hover:text-text-light text-base font-medium transition-colors flex items-center justify-center gap-2 relative z-10">
+      <button
+        onClick={() => setActivePage('Insights')}
+        className="w-full py-3 rounded-xl border border-white/10 bg-surface-dark/50 hover:bg-white/10 text-slate-300 hover:text-text-light text-base font-medium transition-colors flex items-center justify-center gap-2 relative z-10"
+      >
         <span className="material-symbols-outlined text-lg">history</span>
         View Progress
       </button>

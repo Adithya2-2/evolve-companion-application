@@ -1,5 +1,5 @@
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useRef } from 'react';
 import JournalEditor from '../components/JournalEditor';
 import AudioJournalCard from '../components/AudioJournalCard';
 import EmotionScanCard from '../components/EmotionScanCard';
@@ -17,6 +17,8 @@ const JournalPage: React.FC<JournalPageProps> = ({ journalHistory, upsertJournal
     const [currentDate, setCurrentDate] = useState(new Date());
     const [appendRequest, setAppendRequest] = useState<{ id: number; text: string } | null>(null);
     const [appendId, setAppendId] = useState(0);
+    const [showBookmarks, setShowBookmarks] = useState(false);
+    const dateInputRef = useRef<HTMLInputElement>(null);
 
     const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const date = new Date(event.target.value);
@@ -48,7 +50,7 @@ const JournalPage: React.FC<JournalPageProps> = ({ journalHistory, upsertJournal
 
     return (
         <main className="flex-1 relative overflow-hidden flex flex-col">
-            <AnimatedBackground theme="journal" />
+            <AnimatedBackground />
             <div className="relative z-10 flex flex-col h-full p-6 md:p-12 overflow-y-auto">
                 <header className="flex justify-between items-end mb-8">
                     <div>
@@ -61,25 +63,41 @@ const JournalPage: React.FC<JournalPageProps> = ({ journalHistory, upsertJournal
                         </h2>
                     </div>
                     <div className="flex gap-3">
-                        <label htmlFor="date-picker" className="cursor-pointer bg-surface-dark border border-white/10 hover:border-primary/50 text-slate-300 hover:text-white p-3 rounded-xl transition-all shadow-lg">
+                        <button
+                            onClick={() => dateInputRef.current?.showPicker()}
+                            className="bg-surface-dark border border-white/10 hover:border-primary/50 text-slate-300 hover:text-white p-3 rounded-xl transition-all shadow-lg"
+                        >
                             <span className="material-symbols-outlined">calendar_month</span>
-                        </label>
+                        </button>
                         <input
                             type="date"
-                            id="date-picker"
-                            className="hidden"
+                            ref={dateInputRef}
+                            className="w-0 h-0 opacity-0 absolute pointer-events-none"
                             value={currentDate.toISOString().split('T')[0]}
                             onChange={handleDateChange}
+                            title="Select Date"
+                            placeholder="Select Date"
                         />
+                        <button
+                            onClick={() => setShowBookmarks(!showBookmarks)}
+                            className={`p-3 rounded-xl transition-all shadow-lg border ${showBookmarks
+                                ? 'bg-primary text-white border-primary shadow-primary/30'
+                                : 'bg-surface-dark border-white/10 text-slate-300 hover:text-white hover:border-primary/50'}`}
+                            title="View Bookmarks"
+                        >
+                            <span className={`material-symbols-outlined`}>
+                                bookmarks
+                            </span>
+                        </button>
                         <button
                             onClick={handleFavoriteClick}
                             className={`p-3 rounded-xl transition-all shadow-lg border ${selectedEntry?.isFavorite
-                                ? 'bg-primary text-white border-primary shadow-primary/30'
-                                : 'bg-surface-dark border-white/10 text-slate-300 hover:text-white hover:border-primary/50'}`}
-                            title={selectedEntry?.isFavorite ? "Remove from favorites" : "Mark as favorite"}
+                                ? 'bg-amber-400 text-black border-amber-400 shadow-amber-400/30'
+                                : 'bg-surface-dark border-white/10 text-slate-300 hover:text-white hover:border-amber-400/50'}`}
+                            title={selectedEntry?.isFavorite ? "Remove from favorites" : "Mark as favorite for " + formattedDate}
                         >
                             <span className={`material-symbols-outlined ${selectedEntry?.isFavorite ? 'material-symbols-fill' : ''}`}>
-                                bookmark
+                                star
                             </span>
                         </button>
                     </div>
@@ -100,6 +118,44 @@ const JournalPage: React.FC<JournalPageProps> = ({ journalHistory, upsertJournal
                     </div>
                 </div>
             </div>
+
+            {/* Bookmarks Sidebar/Modal overlay */}
+            {showBookmarks && (
+                <div className="absolute right-0 top-0 bottom-0 w-80 bg-surface-dark/95 backdrop-blur-xl border-l border-white/10 shadow-2xl z-50 flex flex-col transform transition-transform animate-slide-in-right">
+                    <div className="p-4 border-b border-white/10 flex justify-between items-center bg-surface-darker">
+                        <h3 className="text-lg font-bold text-text-light flex items-center gap-2">
+                            <span className="material-symbols-outlined text-amber-400">bookmarks</span>
+                            Favorite Entries
+                        </h3>
+                        <button onClick={() => setShowBookmarks(false)} className="text-slate-400 hover:text-white p-1 rounded-full hover:bg-white/10">
+                            <span className="material-symbols-outlined">close</span>
+                        </button>
+                    </div>
+                    <div className="overflow-y-auto p-4 flex-1 space-y-4">
+                        {journalHistory.filter(e => e.isFavorite).length === 0 ? (
+                            <p className="text-slate-400 text-sm italic text-center mt-10">No favorites yet. Star entries to save them here.</p>
+                        ) : (
+                            journalHistory.filter(e => e.isFavorite).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map(entry => {
+                                const d = new Date(entry.date + 'T00:00:00');
+                                const displayDate = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                                return (
+                                    <div key={entry.date} className="bg-surface border border-white/5 p-3 rounded-xl hover:bg-white/5 cursor-pointer transition-colors"
+                                        onClick={() => {
+                                            setCurrentDate(d);
+                                            setShowBookmarks(false);
+                                        }}
+                                    >
+                                        <div className="text-xs text-amber-400 font-bold mb-1">{displayDate}</div>
+                                        <p className="text-sm text-slate-300 line-clamp-3 leading-relaxed">
+                                            {entry.content}
+                                        </p>
+                                    </div>
+                                )
+                            })
+                        )}
+                    </div>
+                </div>
+            )}
         </main>
     );
 };

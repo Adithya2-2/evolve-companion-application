@@ -10,8 +10,8 @@ import { emotionToMoodMap } from '../types/moods';
 import { JournalEntry } from '../types/journal';
 
 interface InsightsPageProps {
-    moodHistory: MoodEntry[];
-    journalHistory: JournalEntry[];
+  moodHistory: MoodEntry[];
+  journalHistory: JournalEntry[];
 }
 
 const InsightsPage: React.FC<InsightsPageProps> = ({ moodHistory, journalHistory }) => {
@@ -98,7 +98,7 @@ const InsightsPage: React.FC<InsightsPageProps> = ({ moodHistory, journalHistory
   const dominantMood = spectrum[0]?.name || 'Neutral';
 
   const stopwords = new Set([
-    'the','and','a','an','to','of','in','is','it','for','on','with','that','this','was','are','as','at','be','by','from','or','but','i','you','we','they','my','your','our','me','us','them','so','if','not','have','has','had','do','did','done'
+    'the', 'and', 'a', 'an', 'to', 'of', 'in', 'is', 'it', 'for', 'on', 'with', 'that', 'this', 'was', 'are', 'as', 'at', 'be', 'by', 'from', 'or', 'but', 'i', 'you', 'we', 'they', 'my', 'your', 'our', 'me', 'us', 'them', 'so', 'if', 'not', 'have', 'has', 'had', 'do', 'did', 'done'
   ]);
 
   const topTopics = (() => {
@@ -136,62 +136,62 @@ const InsightsPage: React.FC<InsightsPageProps> = ({ moodHistory, journalHistory
 
   return (
     <main className="flex-1 relative overflow-hidden flex flex-col">
-      <AnimatedBackground theme="ocean" />
+      <AnimatedBackground />
       <div className="relative z-10 flex flex-col h-full p-6 md:p-8 overflow-y-auto">
         <header className="mb-8">
-            <h2 className="text-3xl md:text-5xl font-bold text-text-light tracking-tight">
-                <span className="animate-title-reveal" style={{animationDelay: '0.1s'}}>Your Growth Insights</span>
-            </h2>
-            <p className="text-slate-300 text-lg mt-2 animate-title-reveal" style={{ animationDelay: '0.2s' }}>
-                Discover patterns and celebrate your progress.
-            </p>
+          <h2 className="text-3xl md:text-5xl font-bold text-text-light tracking-tight">
+            <span className="animate-title-reveal [animation-delay:100ms]">Your Growth Insights</span>
+          </h2>
+          <p className="text-slate-300 text-lg mt-2 animate-title-reveal [animation-delay:200ms]">
+            Discover patterns and celebrate your progress.
+          </p>
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-6 flex-1">
-            {/* Main Chart */}
-            <div className="lg:col-span-3 xl:col-span-3 bg-surface-dark/60 backdrop-blur-md border border-white/10 rounded-2xl shadow-lg p-6 animate-title-reveal" style={{ animationDelay: '0.3s' }}>
-                <MoodTrendChart moodHistory={moodHistory} />
-            </div>
+          {/* Main Chart */}
+          <div className="lg:col-span-3 xl:col-span-3 bg-surface-dark/60 backdrop-blur-md border border-white/10 rounded-2xl shadow-lg p-6 animate-title-reveal [animation-delay:300ms]">
+            <MoodTrendChart moodHistory={moodHistory} />
+          </div>
 
-            {/* Side Column Cards */}
-            <div className="flex flex-col gap-6">
-                <div className="animate-title-reveal" style={{ animationDelay: '0.4s' }}>
-                    <InsightStatCard 
-                        icon="sentiment_satisfied" 
-                        label="Weekly Mood Score" 
-                        value={weeklyScore > 0 ? weeklyScore.toFixed(1) : '—'} 
-                        trend={prevWeeklyScore > 0 ? `${trendPct >= 0 ? '+' : ''}${Math.round(trendPct)}%` : undefined}
-                        trendDirection={trendPct >= 0 ? 'up' : 'down'}
-                        iconColor="text-secondary"
-                    />
-                </div>
-                 <div className="animate-title-reveal" style={{ animationDelay: '0.5s' }}>
-                    <InsightStatCard 
-                        icon="local_fire_department" 
-                        label="Journaling Streak" 
-                        value={String(journalingStreak)} 
-                        unit="days"
-                        iconColor="text-primary"
-                    />
-                </div>
-                <div className="animate-title-reveal" style={{ animationDelay: '0.6s' }}>
-                    <InsightStatCard 
-                        icon="edit_note" 
-                        label="Words Written" 
-                        value={formatK(wordsWritten7d)}
-                        iconColor="text-accent-teal"
-                    />
-                </div>
+          {/* Side Column Cards */}
+          <div className="flex flex-col gap-6">
+            <div className="animate-title-reveal [animation-delay:400ms]">
+              <InsightStatCard
+                icon="sentiment_satisfied"
+                label="Weekly Mood Score"
+                value={weeklyScore > 0 ? weeklyScore.toFixed(1) : '—'}
+                trend={prevWeeklyScore > 0 ? `${trendPct >= 0 ? '+' : ''}${Math.round(trendPct)}%` : undefined}
+                trendDirection={trendPct >= 0 ? 'up' : 'down'}
+                iconColor="text-secondary"
+              />
             </div>
+            <div className="animate-title-reveal [animation-delay:500ms]">
+              <InsightStatCard
+                icon="local_fire_department"
+                label="Journaling Streak"
+                value={String(journalingStreak)}
+                unit="days"
+                iconColor="text-primary"
+              />
+            </div>
+            <div className="animate-title-reveal [animation-delay:600ms]">
+              <InsightStatCard
+                icon="edit_note"
+                label="Words Written"
+                value={formatK(wordsWritten7d)}
+                iconColor="text-accent-teal"
+              />
+            </div>
+          </div>
 
-            {/* Bottom Row */}
-            <div className="lg:col-span-2 xl:col-span-2 animate-title-reveal" style={{ animationDelay: '0.7s' }}>
-               <EmotionalSpectrumCard spectrum={spectrum} />
-            </div>
+          {/* Bottom Row */}
+          <div className="lg:col-span-2 xl:col-span-2 animate-title-reveal [animation-delay:700ms]">
+            <EmotionalSpectrumCard spectrum={spectrum} />
+          </div>
 
-            <div className="lg:col-span-1 xl:col-span-2 animate-title-reveal" style={{ animationDelay: '0.8s' }}>
-               <WeeklySummaryCard summary={weekSummary} moodHistory={moodHistory} journalHistory={journalHistory} />
-            </div>
+          <div className="lg:col-span-1 xl:col-span-2 animate-title-reveal [animation-delay:800ms]">
+            <WeeklySummaryCard summary={weekSummary} moodHistory={moodHistory} journalHistory={journalHistory} />
+          </div>
         </div>
       </div>
     </main>

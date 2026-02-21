@@ -210,7 +210,6 @@ const MoodTrendChart: React.FC<MoodTrendChartProps> = ({ moodHistory }) => {
                         );
                     })}
 
-                    {/* X-Axis Labels */}
                     {moodData.map((d, i) => {
                         if (i % labelStep !== 0) return null;
                         return (
@@ -227,6 +226,41 @@ const MoodTrendChart: React.FC<MoodTrendChartProps> = ({ moodHistory }) => {
                         );
                     })}
                 </svg>
+            </div>
+
+            {/* Daily Breakdown Visual Cards */}
+            <div className="mt-4 pt-4 border-t border-white/10">
+                <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Daily Breakdown</h4>
+                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+                    {moodData.map((d, i) => {
+                        // Skip empty days or show placeholder
+                        if (d.score === 0) {
+                            return (
+                                <div key={`breakdown-${i}`} className="bg-surface-dark/40 border border-white/5 rounded-xl p-3 flex flex-col items-center justify-center opacity-50">
+                                    <span className="text-[10px] text-slate-500 mb-1">{d.day}</span>
+                                    <span className="text-xs text-slate-600 font-medium">No Data</span>
+                                </div>
+                            );
+                        }
+
+                        const emotionValue = d.emotion || 'neutral';
+                        return (
+                            <div key={`breakdown-${i}`} className="bg-surface-dark/60 border border-white/10 rounded-xl p-3 flex flex-col items-center justify-center hover:bg-white/5 transition-colors group relative overflow-hidden">
+                                <div className={`absolute top-0 left-0 w-full h-1 bg-emotion-${emotionValue} opacity-80`}></div>
+                                <span className="text-[10px] text-slate-400 mb-1">{d.day}</span>
+                                <div className="text-base font-bold text-text-light mb-0.5">
+                                    {d.score.toFixed(1)}<span className="text-xs text-slate-500 font-normal">/10</span>
+                                </div>
+                                <div className="flex items-center gap-1.5 mt-1">
+                                    <span className={`w-2 h-2 rounded-full shadow-sm bg-emotion-${emotionValue}`}></span>
+                                    <span className={`text-[10px] font-medium uppercase tracking-wide text-emotion-${emotionValue}`}>
+                                        {d.emotion || 'Neutral'}
+                                    </span>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
             </div>
 
             {/* Emotion legend (only if any emotions detected in visible data) */}
