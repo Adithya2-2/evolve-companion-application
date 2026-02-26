@@ -49,7 +49,7 @@ export interface ChatMessage {
     content: string;
 }
 
-async function getGroqChatCompletion(
+export async function getGroqChatCompletion(
     messages: ChatMessage[],
     maxTokens = 1024,
     temperature = 0.7,
@@ -81,6 +81,9 @@ async function getGroqChatCompletion(
         if (!res.ok) {
             const errText = await res.text().catch(() => '');
             console.error(`[Groq] API error ${res.status}:`, errText);
+            if (res.status === 429) {
+                throw new Error('RATE_LIMIT: The AI service is temporarily busy. Please wait a moment and try again.');
+            }
             throw new Error(`Groq API Error ${res.status}: ${errText.slice(0, 100)}`);
         }
 
@@ -540,6 +543,78 @@ Classify this ${type} strictly using the allowed genres. JSON only.`;
     } catch (e) {
         console.error('[Groq] Infer Genres Error:', e);
         return isMusic ? ['Pop'] : ['Fiction']; // Fallback
+    }
+}
+
+/* ───────────── AI Discovery Tasks ───────────── */
+
+export interface AiDiscoveryTask {
+    id: string;
+    label: string;
+    icon: string;
+    category: 'mood-based' | 'general';
+    type: 'mindfulness' | 'physical' | 'creative' | 'social' | 'cognitive' | 'wellbeing';
+    duration: string;
+    moodContext?: string;
+    benefit?: string;
+}
+
+export async function generateAiDiscoveryTasks(
+    moodData: WeeklyMoodData[],
+    journalData: WeeklyJournalData[]
+): Promise<AiDiscoveryTask[] | null> {
+    const moodSummary = moodData.map(m =>
+        `${m.timestamp.slice(0, 10)}: ${m.mood} (score: ${m.score}, emotion: ${m.emotion_label || 'manual'})`
+    ).join('\n');
+
+    const journalSummary = journalData.map(j =>
+        `[${j.date}]: "${j.content.slice(0, 150)}..."`
+    ).join('\n');
+
+    const systemPrompt = `You are Pluto, an AI wellness companion. Generate exactly 5 to 8 actionable, tailored daily personal growth tasks based on the user's recent emotional state and journal topics.
+Output VALID JSON only. No markdown.
+
+JSON Structure:
+{
+  "tasks": [
+    {
+      "id": "unique-id-string",
+      "label": "Short, clear task name (e.g. '5-min Breathing')",
+      "icon": "self_improvement",
+      "category": "mood-based",
+      "type": "mindfulness",
+      "duration": "5 min",
+      "moodContext": "Brief reason based on user's current emotion",
+      "benefit": "Why this helps"
+    }
+  ]
+}
+Valid types are strictly: mindfulness, physical, creative, social, cognitive, wellbeing. Icon must be a valid Google Material Symbols name.`;
+
+    const userPrompt = `Mood log (recent):
+${moodSummary || 'No mood entries'}
+
+Journal entries (recent):
+${journalSummary || 'No journal entries'}
+
+Provide 5-8 engaging daily tasks in JSON.`;
+
+    try {
+        const raw = await getGroqChatCompletion([
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt },
+        ], 1500, 0.7, true);
+
+        const cleaned = extractJson(raw);
+        const parsed = JSON.parse(cleaned);
+
+        if (Array.isArray(parsed.tasks) && parsed.tasks.length > 0) {
+            return parsed.tasks;
+        }
+        return null;
+    } catch (e) {
+        console.error('[Groq] generateAiDiscoveryTasks Failed:', e);
+        return null;
     }
 }
 

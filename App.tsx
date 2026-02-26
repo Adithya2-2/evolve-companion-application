@@ -5,6 +5,7 @@ import MainContent from './components/MainContent';
 import JournalPage from './pages/JournalPage';
 import InsightsPage from './pages/InsightsPage';
 import InterestsPage from './pages/InterestsPage';
+import CouncilOfEightPage from './pages/CouncilOfEightPage';
 import ChatAssistantButton from './components/ChatAssistantButton';
 import LoginModal from './components/LoginModal';
 import ApiDebugStatus from './components/ApiDebugStatus';
@@ -193,7 +194,7 @@ const AppContent: React.FC = () => {
     );
   }
 
-  const PageComponent = () => {
+  const renderPage = () => {
     switch (activePage) {
       case 'Mood Tracker':
         return <MainContent moodHistory={moodHistory} addMoodEntry={addMoodEntry} setActivePage={setActivePage} />;
@@ -207,10 +208,12 @@ const AppContent: React.FC = () => {
         return <InsightsPage moodHistory={moodHistory} journalHistory={journalHistory} />;
       case 'Interests':
         return <InterestsPage />;
+      case 'Council of Eight':
+        return <CouncilOfEightPage />;
       default:
         return <MainContent moodHistory={moodHistory} addMoodEntry={addMoodEntry} setActivePage={setActivePage} />;
     }
-  }
+  };
 
   return (
     <ErrorBoundary>
@@ -220,7 +223,7 @@ const AppContent: React.FC = () => {
           setActivePage={setActivePage}
           user={user}
         />
-        <PageComponent />
+        {renderPage()}
         <ChatAssistantButton />
       </div>
     </ErrorBoundary>

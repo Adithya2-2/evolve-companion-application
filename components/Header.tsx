@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { MoodEntry } from '../types/moods';
-import { getDailyDiscoveryTasks } from '../utils/discoveryLogic';
+import { getDailyDiscoveryTasks, fetchAndCacheDailyTasks } from '../utils/discoveryLogic';
 import { fetchDiscoveryProgress } from '../services/database';
 import DiscoveryProgressWidget from './DiscoveryProgressWidget';
 
@@ -38,17 +38,23 @@ const Header: React.FC<HeaderProps> = ({ moodHistory }) => {
   const currentMood = moodHistory.length > 0 ? moodHistory[moodHistory.length - 1] : null;
 
   const [completedIds, setCompletedIds] = useState<string[]>([]);
+  const [tasks, setTasks] = useState<any[]>([]);
 
   useEffect(() => {
+    let active = true;
     if (user) {
-      fetchDiscoveryProgress(user.id, todayKey).then(setCompletedIds);
+      fetchDiscoveryProgress(user.id, todayKey).then(cIds => {
+        if (!active) return;
+        setCompletedIds(cIds);
+        fetchAndCacheDailyTasks(user.id, currentMood, cIds).then(dailyTasks => {
+          if (active) setTasks(dailyTasks);
+        });
+      });
+    } else {
+      setTasks(getDailyDiscoveryTasks(currentMood, []));
     }
-  }, [user, todayKey]);
-
-  const tasks = useMemo(
-    () => getDailyDiscoveryTasks(currentMood, completedIds),
-    [currentMood, completedIds]
-  );
+    return () => { active = false; };
+  }, [user, todayKey, currentMood]);
 
   const completedCount = tasks.filter(t => t.isCompleted).length;
   const totalCount = tasks.length;

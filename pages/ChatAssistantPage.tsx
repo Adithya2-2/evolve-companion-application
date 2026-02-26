@@ -1,9 +1,22 @@
 import React, { useState, useRef, useEffect } from 'react';
 import AnimatedBackground from '../components/AnimatedBackground';
 import { chatWithGroq, ChatMessageInput, UserChatContext } from '../services/groq';
+import { triageSuggestArchetype } from '../services/councilService';
 import { useAuth } from '../contexts/AuthContext';
 import { fetchRecentMoodEntries, fetchRecentJournalEntries, fetchUserInterests, fetchChatHistory, saveChatMessage } from '../services/database';
 import { extractJournalKeywords } from '../utils/suggestionEngine';
+
+// Archetype display info for triage suggestions
+const ARCHETYPE_INFO: Record<string, { name: string; icon: string; color: string }> = {
+  shadow: { name: 'The Shadow', icon: '🌑', color: 'from-purple-600 to-purple-900' },
+  stoic: { name: 'The Stoic', icon: '🏛️', color: 'from-slate-500 to-slate-800' },
+  absurdist: { name: 'The Absurdist', icon: '🎭', color: 'from-pink-500 to-pink-800' },
+  essentialist: { name: 'The Essentialist', icon: '⭕', color: 'from-gray-400 to-gray-600' },
+  oracle: { name: 'The Oracle', icon: '🔮', color: 'from-violet-500 to-violet-800' },
+  prosecutor: { name: 'The Prosecutor', icon: '⚖️', color: 'from-red-500 to-red-800' },
+  witness: { name: 'The Witness', icon: '🌿', color: 'from-emerald-500 to-emerald-800' },
+  futureself: { name: 'The Future Self', icon: '🌅', color: 'from-amber-500 to-amber-800' },
+};
 
 interface ChatAssistantPageProps {
   onClose: () => void;
@@ -15,6 +28,10 @@ const ChatAssistantPage: React.FC<ChatAssistantPageProps> = ({ onClose }) => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [userContext, setUserContext] = useState<UserChatContext | undefined>(undefined);
+  const [triageSuggestion, setTriageSuggestion] = useState<{
+    primary?: { id: string; reason: string };
+    secondary?: { id: string; reason: string };
+  } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -81,7 +98,7 @@ const ChatAssistantPage: React.FC<ChatAssistantPageProps> = ({ onClose }) => {
       // Call Groq with history AND context
       const reply = await chatWithGroq([...messages, userMessage], userContext);
 
-      const responseContent = reply || "I'm having trouble connecting to my thought process right now. Please check your internet connection or API key.";
+      const responseContent = reply || "I'm taking a moment to gather my thoughts. Could you try again in a few seconds?";
 
       const assistantMessage: ChatMessageInput = {
         role: 'assistant',
@@ -93,11 +110,28 @@ const ChatAssistantPage: React.FC<ChatAssistantPageProps> = ({ onClose }) => {
       // Persist Assistant Message
       saveChatMessage(user.id, 'assistant', responseContent).catch(e => console.error("Failed to save bot msg:", e));
 
-    } catch (e) {
+      // Run triage analysis in the background (non-blocking)
+      const allMsgs = [...messages, userMessage, assistantMessage];
+      triageSuggestArchetype(allMsgs.map(m => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: m.content })))
+        .then(result => {
+          if (result.shouldSuggest && result.primaryArchetype) {
+            setTriageSuggestion({
+              primary: result.primaryArchetype ? { id: result.primaryArchetype, reason: result.primaryReason || '' } : undefined,
+              secondary: result.secondaryArchetype ? { id: result.secondaryArchetype, reason: result.secondaryReason || '' } : undefined,
+            });
+          }
+        })
+        .catch(() => { /* triage is best-effort */ });
+
+    } catch (e: any) {
       console.error('Chat error:', e);
+      const isRateLimit = e?.message?.includes('RATE_LIMIT') || e?.message?.includes('429');
+      const errorContent = isRateLimit
+        ? "I'm a bit overwhelmed right now — the AI service is temporarily busy. Please wait about 30 seconds and try again! 💙"
+        : "I'm sorry, I had a hiccup. Please try sending your message again.";
       const errorMessage: ChatMessageInput = {
         role: 'assistant',
-        content: "I'm sorry, I encountered an error. Please try again.",
+        content: errorContent,
       };
       setMessages(prev => [...prev, errorMessage]);
       saveChatMessage(user.id, 'assistant', errorMessage.content).catch(e => console.error("Failed to save error msg:", e));
@@ -179,14 +213,49 @@ const ChatAssistantPage: React.FC<ChatAssistantPageProps> = ({ onClose }) => {
             >
               <div
                 className={`max-w-[85%] md:max-w-md px-5 py-3 shadow-sm transition-all duration-300 ${msg.role === 'user'
-                    ? 'bubble-user'
-                    : 'bubble-bot'
+                  ? 'bubble-user'
+                  : 'bubble-bot'
                   }`}
               >
                 <p className="whitespace-pre-wrap leading-relaxed text-[15px] font-medium">{msg.content ?? ''}</p>
               </div>
             </div>
           ))}
+          {/* Triage Archetype Suggestion */}
+          {triageSuggestion && triageSuggestion.primary && (
+            <div className="animate-fade-in-up">
+              <div className="bg-gradient-to-r from-indigo-500/10 to-purple-500/10 dark:from-indigo-900/30 dark:to-purple-900/30 backdrop-blur-md border border-indigo-300/40 dark:border-indigo-600/30 rounded-2xl p-4 shadow-sm">
+                <p className="text-xs text-indigo-600 dark:text-indigo-300 font-semibold tracking-wider uppercase mb-2">💡 Pluto's Suggestion</p>
+                <p className="text-sm text-slate-700 dark:text-slate-200 mb-3">{triageSuggestion.primary.reason}</p>
+                <div className="flex flex-wrap gap-2">
+                  {triageSuggestion.primary && ARCHETYPE_INFO[triageSuggestion.primary.id] && (
+                    <button
+                      onClick={() => { onClose(); setTriageSuggestion(null); }}
+                      className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r ${ARCHETYPE_INFO[triageSuggestion.primary.id].color} text-white text-sm font-semibold shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all`}
+                    >
+                      <span>{ARCHETYPE_INFO[triageSuggestion.primary.id].icon}</span>
+                      <span>Visit {ARCHETYPE_INFO[triageSuggestion.primary.id].name}</span>
+                    </button>
+                  )}
+                  {triageSuggestion.secondary && ARCHETYPE_INFO[triageSuggestion.secondary.id] && (
+                    <button
+                      onClick={() => { onClose(); setTriageSuggestion(null); }}
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/40 dark:bg-white/10 border border-white/50 dark:border-white/20 text-slate-700 dark:text-slate-200 text-sm font-medium hover:bg-white/60 dark:hover:bg-white/20 transition-all"
+                    >
+                      <span>{ARCHETYPE_INFO[triageSuggestion.secondary.id].icon}</span>
+                      <span>Or {ARCHETYPE_INFO[triageSuggestion.secondary.id].name}</span>
+                    </button>
+                  )}
+                </div>
+                <button
+                  onClick={() => setTriageSuggestion(null)}
+                  className="mt-2 text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+                >
+                  Dismiss
+                </button>
+              </div>
+            </div>
+          )}
           {isLoading && (
             <div className="flex justify-start">
               <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-md border border-white/40 dark:border-white/10 px-4 py-2 rounded-2xl shadow-sm">

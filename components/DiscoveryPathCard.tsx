@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { MoodEntry } from '../types/moods';
 import { DiscoveryTask } from '../types/discovery';
-import { getDailyDiscoveryTasks } from '../utils/discoveryLogic';
+import { getDailyDiscoveryTasks, fetchAndCacheDailyTasks } from '../utils/discoveryLogic';
 import { fetchDiscoveryProgress, saveDiscoveryProgress } from '../services/database';
 import { useAuth } from '../contexts/AuthContext';
 import DiscoveryTaskList from './DiscoveryTaskList';
@@ -42,21 +42,31 @@ const DiscoveryPathCard: React.FC<DiscoveryPathCardProps> = ({ moodHistory }) =>
 
     // Load progress from Supabase on mount
     useEffect(() => {
+        let active = true;
         const loadProgress = async () => {
             setLoading(true);
             let completedIds: string[] = [];
 
             if (user) {
                 completedIds = await fetchDiscoveryProgress(user.id, todayKey);
+                const dailyTasks = await fetchAndCacheDailyTasks(user.id, currentMood, completedIds);
+                if (active) {
+                    setTasks(dailyTasks);
+                    setLoading(false);
+                }
+            } else {
+                const dailyTasks = getDailyDiscoveryTasks(currentMood, completedIds);
+                if (active) {
+                    setTasks(dailyTasks);
+                    setLoading(false);
+                }
             }
-
-            const dailyTasks = getDailyDiscoveryTasks(currentMood, completedIds);
-            setTasks(dailyTasks);
-            setLoading(false);
         };
 
         loadProgress();
-    }, [user, currentMood, todayKey]);
+        return () => { active = false; };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user, todayKey]);
 
     // Toggle task completion — optimistic instant UI update
     const handleToggle = useCallback(

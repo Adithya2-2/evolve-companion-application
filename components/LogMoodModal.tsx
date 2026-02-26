@@ -199,10 +199,10 @@ const LogMoodModal: React.FC<LogMoodModalProps> = ({ isOpen, onClose, addMoodEnt
               </button>
               <h3 className="text-2xl font-bold text-center">Select Your Mood</h3>
             </div>
-            <div className="flex flex-wrap justify-center items-center gap-4 max-h-[400px] overflow-y-auto pr-2 content-center">
+            <div className="flex flex-wrap justify-center items-center gap-4 max-h-[400px] overflow-y-auto p-4 content-center">
               {moodOptions.map(mood => (
-                <button key={mood.name} onClick={() => handleSelectMood(mood)} className="flex flex-col items-center justify-center p-4 bg-surface-dark/50 hover:bg-primary/20 rounded-xl transition-all aspect-square group border border-transparent hover:border-primary">
-                  <span className="material-symbols-outlined text-4xl mb-2 transition-transform duration-300 group-hover:scale-125">{mood.icon}</span>
+                <button key={mood.name} onClick={() => handleSelectMood(mood)} className="flex flex-col items-center justify-center p-4 w-[110px] h-[110px] bg-surface-dark/50 hover:bg-primary/20 rounded-xl transition-all group border border-transparent hover:border-primary">
+                  <span className="material-symbols-outlined text-4xl mb-2 transition-transform duration-300 group-hover:scale-125 whitespace-nowrap overflow-hidden">{mood.icon}</span>
                   <span className="font-bold text-sm text-text-light">{mood.name}</span>
                 </button>
               ))}

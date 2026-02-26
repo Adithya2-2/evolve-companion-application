@@ -618,3 +618,73 @@ export const saveChatMessage = async (
     created_at: data.created_at,
   };
 };
+
+// ──────────────────────────────────────────────
+// Council of Eight — Archetype Chat History
+// ──────────────────────────────────────────────
+export interface ArchetypeChatMessageEntry {
+  id: string;
+  archetype_id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  created_at: string;
+}
+
+export const fetchArchetypeChatHistory = async (
+  userId: string,
+  archetypeId: string,
+  limit = 50
+): Promise<ArchetypeChatMessageEntry[]> => {
+  const { data, error } = await supabase
+    .from('council_chat_messages')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('archetype_id', archetypeId)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error('Error fetching archetype chat history:', error);
+    return [];
+  }
+
+  // Return in chronological order for chat UI
+  return (data || []).reverse().map(msg => ({
+    id: msg.id,
+    archetype_id: msg.archetype_id,
+    role: msg.role as 'user' | 'assistant',
+    content: msg.content,
+    created_at: msg.created_at,
+  }));
+};
+
+export const saveArchetypeChatMessage = async (
+  userId: string,
+  archetypeId: string,
+  role: 'user' | 'assistant',
+  content: string
+): Promise<ArchetypeChatMessageEntry | null> => {
+  const { data, error } = await supabase
+    .from('council_chat_messages')
+    .insert({
+      user_id: userId,
+      archetype_id: archetypeId,
+      role,
+      content,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error saving archetype chat message:', error);
+    return null;
+  }
+
+  return {
+    id: data.id,
+    archetype_id: data.archetype_id,
+    role: data.role,
+    content: data.content,
+    created_at: data.created_at,
+  };
+};

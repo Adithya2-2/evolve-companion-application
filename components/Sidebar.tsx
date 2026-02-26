@@ -9,6 +9,7 @@ const navItems = [
   { name: 'Journal', icon: 'description' },
   { name: 'Insights', icon: 'insights' },
   { name: 'Interests', icon: 'explore' },
+  { name: 'Council of Eight', icon: 'groups' },
 ];
 
 const AnimatedIcon: React.FC<{ name: string; active: boolean; }> = ({ name, active }) => {

@@ -28,7 +28,7 @@ const MainContent: React.FC<MainContentProps> = ({ moodHistory, addMoodEntry, se
         <Header moodHistory={moodHistory} />
         <ReflectionCard />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <JourneyStreakCard setActivePage={setActivePage} />
+          <JourneyStreakCard setActivePage={setActivePage} moodHistory={moodHistory} />
           <DiscoveryPathCard moodHistory={moodHistory} />
           <CurrentMoodCard
             latestMoodEntry={latestMoodEntry}

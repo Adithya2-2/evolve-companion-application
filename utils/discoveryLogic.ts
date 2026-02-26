@@ -29,27 +29,6 @@ export function getRecommendedActivities(currentMood: MoodEntry | null): Activit
     return matches.sort(() => 0.5 - Math.random()).slice(0, 2);
 }
 
-// ──────────────────────────────────────────────
-// General wellbeing tasks (always shown daily)
-// ──────────────────────────────────────────────
-const GENERAL_TASKS: Omit<DiscoveryTask, 'isCompleted'>[] = [
-    {
-        id: 'general-hydrate',
-        label: 'Drink a Glass of Water',
-        icon: 'water_drop',
-        category: 'general',
-        type: 'wellbeing',
-        duration: '1 min',
-    },
-    {
-        id: 'general-digital-detox',
-        label: 'Digital Detox (5 mins)',
-        icon: 'phonelink_off',
-        category: 'general',
-        type: 'wellbeing',
-        duration: '5 min',
-    },
-];
 
 // ──────────────────────────────────────────────
 // Generate the daily task list
@@ -58,73 +37,56 @@ export function getDailyDiscoveryTasks(
     currentMood: MoodEntry | null,
     completedIds: string[] = []
 ): DiscoveryTask[] {
-    const moodTasks: DiscoveryTask[] = [];
+    const TARGET_COUNT = 8;
+    const daySeed = new Date().toISOString().split('T')[0];
+
+    let pool: Activity[] = [];
 
     if (currentMood) {
         const moodName = getMappedMood(currentMood);
-        const isNegative = ['Sad', 'Anxious', 'Stressed', 'Angry', 'Tired', 'Fearful', 'Disgusted'].includes(moodName);
 
-        // Filter activities matching the mood
-        let matched = activities.filter(a => a.targetMoods.includes(moodName));
+        // Primary: activities matching the mood
+        const matched = activities.filter(a => a.targetMoods.includes(moodName));
+        // Secondary: everything else
+        const rest = activities.filter(a => !a.targetMoods.includes(moodName));
 
-        // Fallback to type-based picks
-        if (matched.length < 3) {
-            const fallbackTypes = isNegative ? ['mindfulness', 'physical'] : ['cognitive', 'creative', 'social'];
-            const extras = activities.filter(a => !matched.includes(a) && fallbackTypes.includes(a.type));
-            matched = [...matched, ...extras];
-        }
-
-        // Use a date-based seed so tasks stay consistent throughout the day
-        const daySeed = new Date().toISOString().split('T')[0];
-        const seeded = matched
+        // Deterministic shuffle both groups
+        const sortedMatched = matched
             .map(a => ({ a, sortKey: hashCode(a.id + daySeed) }))
             .sort((x, y) => x.sortKey - y.sortKey)
             .map(x => x.a);
 
-        const picked = seeded.slice(0, 5);
+        const sortedRest = rest
+            .map(a => ({ a, sortKey: hashCode(a.id + daySeed) }))
+            .sort((x, y) => x.sortKey - y.sortKey)
+            .map(x => x.a);
 
-        picked.forEach(activity => {
-            moodTasks.push({
-                id: `mood-${activity.id}`,
-                label: activity.title,
-                icon: activity.icon,
-                category: 'mood-based',
-                type: activity.type,
-                duration: activity.duration,
-                isCompleted: completedIds.includes(`mood-${activity.id}`),
-                moodContext: `Recommended for ${moodName}`,
-                benefit: activity.benefit,
-            });
-        });
+        // Take mood-matched first, fill rest to reach TARGET_COUNT
+        pool = [...sortedMatched, ...sortedRest].slice(0, TARGET_COUNT);
     } else {
-        // No mood logged — give one mindfulness + one physical
-        const defaults = [
-            activities.find(a => a.type === 'mindfulness'),
-            activities.find(a => a.type === 'physical'),
-        ].filter(Boolean) as Activity[];
-
-        defaults.forEach(activity => {
-            moodTasks.push({
-                id: `mood-${activity.id}`,
-                label: activity.title,
-                icon: activity.icon,
-                category: 'mood-based',
-                type: activity.type,
-                duration: activity.duration,
-                isCompleted: completedIds.includes(`mood-${activity.id}`),
-                moodContext: 'General recommendation',
-                benefit: activity.benefit,
-            });
-        });
+        // No mood — deterministic shuffle all activities
+        pool = activities
+            .map(a => ({ a, sortKey: hashCode(a.id + daySeed) }))
+            .sort((x, y) => x.sortKey - y.sortKey)
+            .map(x => x.a)
+            .slice(0, TARGET_COUNT);
     }
 
-    // General tasks
-    const generalTasks: DiscoveryTask[] = GENERAL_TASKS.map(t => ({
-        ...t,
-        isCompleted: completedIds.includes(t.id),
-    }));
+    const moodName = currentMood ? getMappedMood(currentMood) : null;
 
-    return [...moodTasks, ...generalTasks];
+    return pool.map(activity => ({
+        id: `mood-${activity.id}`,
+        label: activity.title,
+        icon: activity.icon,
+        category: (currentMood && activity.targetMoods.includes(moodName!)) ? 'mood-based' as const : 'general' as const,
+        type: activity.type,
+        duration: activity.duration,
+        isCompleted: completedIds.includes(`mood-${activity.id}`),
+        moodContext: moodName && activity.targetMoods.includes(moodName)
+            ? `Recommended for ${moodName}`
+            : 'General wellness',
+        benefit: activity.benefit,
+    }));
 }
 
 // Simple deterministic hash so the daily selection is stable
@@ -137,3 +99,53 @@ function hashCode(str: string): number {
     }
     return hash;
 }
+
+// ──────────────────────────────────────────────
+// Smart Static Tasks: Select 8 from Pool & Cache
+// ──────────────────────────────────────────────
+import { fetchUserSettings, saveUserSettings } from '../services/database';
+
+export async function fetchAndCacheDailyTasks(
+    userId: string,
+    currentMood: MoodEntry | null,
+    completedIds: string[]
+): Promise<DiscoveryTask[]> {
+    const todayKey = new Date().toISOString().split('T')[0];
+
+    try {
+        const settings = await fetchUserSettings(userId);
+        const cache = settings?.daily_tasks_cache as any;
+
+        // 1. Check if we already have cached tasks for today
+        if (cache && cache.date === todayKey && Array.isArray(cache.tasks) && cache.tasks.length > 0) {
+            return cache.tasks.map((t: any) => ({
+                ...t,
+                isCompleted: completedIds.includes(t.id)
+            })) as DiscoveryTask[];
+        }
+
+        // 2. No cache for today — generate from static pool
+        const dailyTasks = getDailyDiscoveryTasks(currentMood, completedIds);
+
+        // 3. Cache the tasks for today (without completion state)
+        const tasksToCache = dailyTasks.map(t => {
+            const { isCompleted, ...rest } = t;
+            return rest;
+        });
+        await saveUserSettings(userId, {
+            ...settings,
+            daily_tasks_cache: {
+                date: todayKey,
+                tasks: tasksToCache
+            }
+        });
+
+        return dailyTasks;
+    } catch (e) {
+        console.error('Failed to fetch/cache daily tasks, using fallback', e);
+    }
+
+    // 3. Fallback to heuristic generation
+    return getDailyDiscoveryTasks(currentMood, completedIds);
+}
+

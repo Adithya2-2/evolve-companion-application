@@ -19,11 +19,13 @@ This document summarizes all the major features, bug fixes, and performance impr
 - **Log Mood Modal Centering**: Rebuilt the layout grid of the mood tracking modal using Flexbox architecture to guarantee precise viewport centering dynamically.
 - **Inspirational Quote System**: Deployed a dynamic, randomized quote generator utilizing 10 highly resonant mental-health and philosophical quotes inside `QuoteCard.tsx`.
 
+
 ## 4. Journaling Tool Polish
 - **Persistent Bookmarking**: Integrated a hidden `isFavorite` column within the Supabase `journal_entries` table. Added a polished 'Bookmarks' slide-in sidebar on the Journal page to instantly view all curated favorite entries.
 - **Calendar Date Picker Fix**: Restructured the date input to leverage a hidden native `<input type="date">` activated via `.showPicker()`, eliminating a localized buggy click-box event.
 
-## 5. Backend Security & Performance Checkup
-- **RLS Query Optimization**: Overhauled 27 Row Level Security (RLS) policies within Supabase. Shifted runtime policies from `auth.uid()` to `(select auth.uid())`, drastically boosting database query resolution speed at scale.
-- **Security Patches**: Corrected a `function_search_path_mutable` vulnerability within the `handle_new_user` Postgres function by isolating the default `search_path = public`.
-- **Indexing Enhancements**: Boosted response speeds regarding chat functionalities by patching a missing index on the `chat_messages(user_id)` foreign key constraint.
+## 5. Council of Eight (The Archetypes)
+- **Council of Eight Page**: Added a new interactive page featuring 8 specialized AI archetypes (e.g., The Shadow, The Stoic Architect, The Absurdist) to provide targeted psychological frameworks for user reflection.
+- **Council Service**: Implemented service logic and detailed system prompts to drive the distinct personalities and response styles of each archetype.
+- **Discovery Tasks Update**: Replaced dynamically generated AI tasks with a static, curated pool of tasks tailored to user moods to optimize performance and prevent API rate-limiting issues.
+

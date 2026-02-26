@@ -24,9 +24,10 @@ interface JournalEditorProps {
     initialContent?: string;
     onSave?: (content: string, wordCount: number, charCount: number) => void;
     appendRequest?: { id: number; text: string } | null;
+    userName?: string;
 }
 
-const JournalEditor: React.FC<JournalEditorProps> = ({ initialContent, onSave, appendRequest }) => {
+const JournalEditor: React.FC<JournalEditorProps> = ({ initialContent, onSave, appendRequest, userName }) => {
     const [wordCount, setWordCount] = useState(0);
     const [charCount, setCharCount] = useState(0);
     const editorRef = useRef<HTMLDivElement>(null);
@@ -115,7 +116,7 @@ const JournalEditor: React.FC<JournalEditorProps> = ({ initialContent, onSave, a
                 onInput={updateCounts}
                 onFocus={updateActiveFormats}
                 className="flex-1 w-full bg-transparent border-none focus:ring-0 p-6 text-text-light text-lg leading-relaxed placeholder:text-slate-500 resize-none overflow-y-auto min-h-[200px]"
-                data-placeholder="What's on your mind today, Alex? Let your thoughts flow freely..."
+                data-placeholder={`What's on your mind today, ${userName || 'there'}? Let your thoughts flow freely...`}
             ></div>
             <div className="p-4 flex justify-between items-center bg-gradient-to-t from-surface-dark/50 to-transparent">
                 <span className="text-xs text-slate-400 font-medium">{wordCount} words / {charCount} characters</span>

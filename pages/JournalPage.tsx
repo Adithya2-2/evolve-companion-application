@@ -6,6 +6,15 @@ import EmotionScanCard from '../components/EmotionScanCard';
 import QuoteCard from '../components/QuoteCard';
 import AnimatedBackground from '../components/AnimatedBackground';
 import { JournalEntry } from '../types/journal';
+import { useAuth } from '../contexts/AuthContext';
+import { useSettings } from '../contexts/SettingsContext';
+
+function extractName(email: string): string {
+    const local = email.split('@')[0];
+    const cleaned = local.replace(/[^a-zA-Z]/g, ' ').trim();
+    if (!cleaned) return 'Explorer';
+    return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+}
 
 interface JournalPageProps {
     journalHistory: JournalEntry[];
@@ -14,11 +23,15 @@ interface JournalPageProps {
 }
 
 const JournalPage: React.FC<JournalPageProps> = ({ journalHistory, upsertJournalEntry, onToggleFavorite }) => {
+    const { user } = useAuth();
+    const { settings } = useSettings();
     const [currentDate, setCurrentDate] = useState(new Date());
     const [appendRequest, setAppendRequest] = useState<{ id: number; text: string } | null>(null);
     const [appendId, setAppendId] = useState(0);
     const [showBookmarks, setShowBookmarks] = useState(false);
     const dateInputRef = useRef<HTMLInputElement>(null);
+
+    const displayName = settings.displayName || (user?.user_metadata?.first_name) || (user?.email ? extractName(user.email) : 'Explorer');
 
     const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const date = new Date(event.target.value);
@@ -109,6 +122,7 @@ const JournalPage: React.FC<JournalPageProps> = ({ journalHistory, upsertJournal
                             initialContent={selectedEntry?.content || ''}
                             appendRequest={appendRequest}
                             onSave={(content, wordCount, charCount) => upsertJournalEntry(currentDate, content, wordCount, charCount)}
+                            userName={displayName}
                         />
                     </div>
                     <div className="lg:col-span-1 flex flex-col gap-6">
